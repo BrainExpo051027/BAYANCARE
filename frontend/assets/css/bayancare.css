@@ -1,0 +1,338 @@
+/* BAYANCARE modern healthcare theme & animations
+   Uses calming blues/greens and minimal UI on top of base.css */
+
+:root {
+    --bc-primary: #1b9aaa;
+    --bc-primary-soft: #e6f7fa;
+    --bc-accent: #4caf50;
+    --bc-danger: #e53935;
+    --bc-warning: #ffb300;
+    --bc-bg-soft: #f5fbfd;
+    --bc-text-muted: #545e68; /* Darkened for better readability */
+}
+
+/* Explicit risk colors */
+.bg-danger { background-color: var(--bc-danger) !important; color: white; }
+.bg-warning { background-color: var(--bc-warning) !important; color: #212529; }
+.bg-success { background-color: var(--bc-accent) !important; color: white; }
+.text-danger { color: var(--bc-danger) !important; }
+.text-warning { color: var(--bc-warning) !important; }
+.text-success { color: var(--bc-accent) !important; }
+.border-danger { border-color: var(--bc-danger) !important; }
+.border-warning { border-color: var(--bc-warning) !important; }
+.border-success { border-color: var(--bc-accent) !important; }
+
+body.bayancare-body {
+    background: radial-gradient(circle at top left, #e9f7ff, #f6fffb);
+    min-height: 100vh;
+}
+
+.bc-sidebar {
+    width: 250px;
+    background: #ffffffcc;
+    backdrop-filter: blur(12px);
+    border-right: 1px solid #e2e8f0;
+}
+
+.bc-logo-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bc-primary), var(--bc-accent));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sidebar nav link transitions */
+.bc-sidebar .nav-link {
+    border-radius: 999px;
+    color: #344054;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    transition: background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.15s ease;
+}
+
+.bc-sidebar .nav-link.active {
+    background-color: var(--bc-primary);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(27, 154, 170, 0.30);
+}
+
+.bc-sidebar .nav-link:hover:not(.active) {
+    background-color: var(--bc-primary-soft);
+    transform: translateX(3px);
+}
+
+.bc-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+/* ─── Page sections — instant switching, no transition lag ─────────────────
+   Simple display:none/block for immediate, snappy navigation.               */
+
+.bc-page {
+    display: none;
+}
+
+.bc-page.active {
+    display: block;
+}
+
+.bc-risk-badge {
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    font-size: 0.75rem;
+}
+
+.bc-risk-low {
+    background: rgba(76, 175, 80, 0.12);
+    color: #2e7d32;
+}
+
+.bc-risk-moderate {
+    background: rgba(255, 179, 0, 0.15);
+    color: #ff8f00;
+}
+
+.bc-risk-high {
+    background: rgba(229, 57, 53, 0.12);
+    color: #c62828;
+    animation: bcPulseHigh 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes bcPulseHigh {
+    from {
+        box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.3);
+    }
+    to {
+        box-shadow: 0 0 0 8px rgba(229, 57, 53, 0);
+    }
+}
+
+.bc-loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bc-loading-box {
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.bc-medical-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 3px solid var(--bc-primary-soft);
+    border-top-color: var(--bc-primary);
+    border-right-color: var(--bc-accent);
+    animation: bcSpin 0.8s linear infinite;
+    position: relative;
+}
+
+.bc-medical-spinner::before,
+.bc-medical-spinner::after {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border-radius: 999px;
+    border: 1px dashed rgba(27, 154, 170, 0.3);
+}
+
+.bc-medical-spinner::after {
+    inset: 16px;
+    border-style: solid;
+    border-color: transparent var(--bc-accent) transparent var(--bc-accent);
+    transform: rotate(45deg);
+}
+
+@keyframes bcSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.bc-announcement-list {
+    /* Full content display - no scrolling within individual announcements */
+    display: block;
+}
+
+.bc-announcement-list.expanded {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.bc-announcement-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.bc-announcement-item:last-child {
+    border-bottom: none;
+}
+
+/* Announcement card with image on top */
+.announcement-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+.announcement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.announcement-image-container {
+    position: relative;
+    width: 100%;
+    max-height: 400px;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    background-color: #f8f9fa;
+}
+
+.announcement-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+}
+
+.bc-step-indicator {
+    background-color: var(--bc-primary-soft);
+    color: #0f6472;
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.bc-muted {
+    color: var(--bc-text-muted);
+}
+
+/* ─── UI Enhancements: Skeleton, Empty States, Form Checks ───────────── */
+
+/* Skeleton Loader */
+@keyframes skeletonLoading {
+    0% { background-color: #e2e8f0; }
+    50% { background-color: #f1f5f9; }
+    100% { background-color: #e2e8f0; }
+}
+
+.bc-skeleton {
+    animation: skeletonLoading 1.5s infinite ease-in-out;
+    border-radius: 8px;
+    color: transparent !important; /* Hide text if present */
+    border: none !important;
+    pointer-events: none;
+}
+
+.bc-skeleton * {
+    visibility: hidden; /* Hide children while loading */
+}
+
+/* Empty State Utility */
+.bc-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--bc-text-muted);
+}
+
+.bc-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.bc-empty-state h6 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #344054;
+}
+
+/* Symptom Checkboxes */
+.bc-symptom-check {
+    position: relative;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.bc-symptom-check .form-check-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.bc-symptom-check .form-check-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.bc-symptom-check .form-check-input:checked ~ .form-check-label {
+    background-color: var(--bc-primary-soft);
+    border-color: var(--bc-primary);
+    color: #0f6472;
+    font-weight: 500;
+}
+
+.bc-symptom-check .form-check-input:focus ~ .form-check-label {
+    box-shadow: 0 0 0 0.2rem rgba(27, 154, 170, 0.25);
+}
+
+
+/* ─── Smooth button interactions ─────────────────────────────────────────── */
+.btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease !important;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.97) !important;
+}
+
+/* ─── Card hover lift ─────────────────────────────────────────────────────── */
+.bc-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* ─── Consultation filter tabs (btn-group inside consultation panel) ──────── */
+.btn-group .btn {
+    transition: background-color 0.20s ease, color 0.20s ease,
+                border-color 0.20s ease, box-shadow 0.20s ease !important;
+}
+
+.btn-group .btn.active {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18) !important;
+}

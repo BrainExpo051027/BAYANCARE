@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BHW Dashboard - BAYANCARE</title>
+    <!-- Bootstrap & Icons — served locally so the app works offline / after hard refresh -->
+    <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/bayancare.css">
+</head>
+<body class="bayancare-body">
+
+    <div class="d-flex min-vh-100">
+        <!-- Sidebar (desktop) -->
+        <aside class="bc-sidebar d-none d-md-flex flex-column p-3">
+            <div class="d-flex align-items-center mb-4">
+                <div class="me-2" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                    <img src="../assets/images/logo.svg" alt="BAYANCARE Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <div>
+                    <div class="fw-bold text-primary">BAYANCARE</div>
+                    <small class="bc-muted">Barangay Health Advisory</small>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav nav-pills flex-column gap-1" id="bcSidebarNav">
+                    <li class="nav-item">
+                        <button class="nav-link active w-100 text-start" data-target="system-section">Dashboard</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link w-100 text-start" data-target="recovery-section">Recovery</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link w-100 text-start" data-target="announcements-section">Announcements</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link w-100 text-start" data-target="referrals-section">Referrals</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link w-100 text-start" data-target="users-section">Users</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link w-100 text-start" data-target="consultations-section"><i class="bi bi-bell"></i> Consultations</button>
+                    </li>
+                    <li class="nav-item" id="admin-nav-item" style="display:none;">
+                        <button class="nav-link w-100 text-start" data-target="admin-section">Admin Tools</button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mt-auto pt-3 border-top small bc-muted">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>Logged in as <span id="bcUserRole">BHW</span></div>
+                    <button id="bcLogoutBtn" class="btn btn-sm btn-outline-danger">Logout</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <!-- Mobile top bar -->
+            <header class="d-md-none px-3 py-2 bg-white border-bottom d-flex align-items-center justify-content-between">
+                <button id="bcMobileToggle" class="btn btn-sm btn-outline-primary">
+                    <span class="bi bi-list"></span> Menu
+                </button>
+                <span class="fw-semibold">BAYANCARE</span>
+            </header>
+            <!-- Mobile menu -->
+            <div id="bcMobileMenu" class="d-md-none bg-white border-bottom" style="display:none;">
+                <nav class="p-2">
+                    <ul class="nav flex-column gap-1" id="bcMobileNav">
+                        <li class="nav-item">
+                            <button class="nav-link active w-100 text-start" data-target="system-section">Dashboard</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link w-100 text-start" data-target="recovery-section">Recovery</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link w-100 text-start" data-target="announcements-section">Announcements</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link w-100 text-start" data-target="referrals-section">Referrals</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link w-100 text-start" data-target="users-section">Users</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link w-100 text-start" data-target="consultations-section">Consultations</button>
+                        </li>
+                        <li class="nav-item" id="admin-mobile-nav-item" style="display:none;">
+                            <button class="nav-link w-100 text-start" data-target="admin-section">Admin Tools</button>
+                        </li>
+                        <li class="nav-item mt-2 pt-2 border-top">
+                            <button class="nav-link w-100 text-start text-danger" id="mobileLogoutBtn">Logout</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <main class="flex-grow-1 p-4" style="background: var(--bc-bg-soft);">
+
+                <!-- System Overview (Dashboard) -->
+                <section id="system-section" class="bc-page bc-fade-slide active">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">System Overview</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="bc-muted small">Real-time statistics</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadSystemStats()">Refresh</button>
+                            </div>
+                            <div id="system-stats">
+                                <p class="bc-muted">Loading stats…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recovery Management -->
+                <section id="recovery-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Illness Monitoring & Follow-Up</h5>
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadRecoveryDashboard()">Refresh</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="checkDueNotifications()">Check Due</button>
+                                <button class="btn btn-sm btn-outline-dark" onclick="toggleArchivedRecoveries()" id="archived-recovery-btn">View Archived</button>
+                            </div>
+                            <div id="recovery-stats" class="mb-3"></div>
+                            <h6 class="mb-2" id="recovery-list-title">Active Patient Recoveries</h6>
+                            <div id="recovery-list">
+                                <p class="bc-muted">Loading…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Announcements Management -->
+                <section id="announcements-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Manage Announcements</h5>
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-sm btn-primary" id="btn-create-announcement" onclick="showCreateForm()">Create New</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadAnnouncements()">Refresh</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleArchivedView()" id="archived-toggle-btn">View Archived</button>
+                            </div>
+                            <div id="create-form" style="display:none;" class="card mt-3">
+                                <div class="card-body">
+                    <form id="announcement-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Title</label>
+                                    <input type="text" id="ann-title" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select id="ann-category" class="form-control">
+                                        <option value="">Select category</option>
+                                        <option value="Vaccination Programs">Vaccination Programs</option>
+                                        <option value="Medical Check-up Missions">Medical Check-up Missions</option>
+                                        <option value="Maternal and Child Health Programs">Maternal and Child Health Programs</option>
+                                        <option value="Nutrition Programs">Nutrition Programs</option>
+                                        <option value="Disease Prevention Campaigns">Disease Prevention Campaigns</option>
+                                        <option value="Senior Citizen Health Programs">Senior Citizen Health Programs</option>
+                                        <option value="Environmental Health Activities">Environmental Health Activities</option>
+                                        <option value="Emergency Health Announcements">Emergency Health Announcements</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Body</label>
+                            <textarea id="ann-body" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Specific Type</label>
+                                    <select id="ann-subcategory" class="form-control" disabled>
+                                        <option value="">Select a category first</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Barangay</label>
+                                    <input type="text" id="ann-barangay" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Event Start Date</label>
+                                    <input type="date" id="ann-event-start" class="form-control">
+                                    <small class="text-muted">When the program/event starts</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Event End Date</label>
+                                    <input type="date" id="ann-event-end" class="form-control">
+                                    <small class="text-muted">When the program/event ends (will auto-archive after this date)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Announcement Photo (optional)</label>
+                            <input type="file" id="ann-image" class="form-control" accept="image/png,image/jpeg,image/webp">
+                            <small class="text-muted">If uploaded, this photo will appear at the top of the announcement.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="ann-emergency"> Emergency
+                            </label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Create</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideCreateForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="announcements-list"></div>
+        </div>
+    </div>
+</section>
+
+                <!-- Referrals Management -->
+                <section id="referrals-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Referral Slips</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="bc-muted small">Generated referrals</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadReferrals()">Refresh</button>
+                            </div>
+                            <div id="referrals-list">
+                                <p class="bc-muted">Loading…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Users/Profiles -->
+                <section id="users-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Resident Profiles</h5>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-8">
+                                    <input type="text" id="search-user" class="form-control" placeholder="Search by username or barangay">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-outline-primary w-100" onclick="searchUsers()">Search</button>
+                                </div>
+                            </div>
+                            <div id="users-list">
+                                <p class="bc-muted">Search to see results.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Consultations (BHW/Admin) -->
+                <section id="consultations-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3" id="consultations-section-heading"><i class="bi bi-bell"></i> Pending Consultations</h5>
+                            <p class="bc-muted small mb-3">HIGH risk assessments requiring health worker review and referral generation.</p>
+                            <div id="bcConsultationsList">
+                                <p class="bc-muted">Click refresh to load pending consultations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Admin Tools (ADMIN only) -->
+                <section id="admin-section" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Admin Tools</h5>
+                            <p class="bc-muted small mb-3">Approve/deny BHW accounts and manage users.</p>
+
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6>Pending BHW Approvals</h6>
+                                    <button class="btn btn-sm btn-outline-primary mb-2" onclick="loadPendingBhw()">Refresh Pending</button>
+                                    <div id="pending-bhw-list">
+                                        <p class="bc-muted">Loading…</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>All Users</h6>
+                                    <button class="btn btn-sm btn-outline-primary mb-2" onclick="loadAllUsersAdmin()">Refresh Users</button>
+                                    <div id="admin-users-list">
+                                        <p class="bc-muted">Loading…</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        let currentUser = null;
+
+        async function loadCurrentUser() {
+            try {
+                currentUser = await apiCall('/auth/me');
+                const roleEl = document.getElementById('bcUserRole');
+                if (roleEl && currentUser) roleEl.textContent = currentUser.role || 'BHW';
+                if (currentUser && currentUser.role === 'ADMIN') {
+                    const adminItem = document.getElementById('admin-nav-item');
+                    const adminMobileItem = document.getElementById('admin-mobile-nav-item');
+                    if (adminItem) adminItem.style.display = 'block';
+                    if (adminMobileItem) adminMobileItem.style.display = 'block';
+                }
+            } catch (err) {
+                alert('Session expired. Please log in again.');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Section navigation with role check
+        function showSection(name) {
+            // Check admin-only sections
+            const adminOnlySections = ['admin-section'];
+            if (adminOnlySections.includes(name) && (!currentUser || currentUser.role !== 'ADMIN')) {
+                alert('Admin credentials required. Please contact your administrator for access.');
+                return;
+            }
+
+            document.querySelectorAll('.bc-page').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(name);
+            if (el) el.classList.add('active');
+
+            document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll(`[data-target="${name}"]`).forEach(a => a.classList.add('active'));
+
+            if (name === 'announcements-section') loadAnnouncements();
+            if (name === 'referrals-section') loadReferrals();
+            if (name === 'system-section') loadSystemStats();
+            if (name === 'recovery-section') loadRecoveryDashboard();
+            if (name === 'consultations-section') loadPendingConsultations();
+            if (name === 'admin-section') {
+                loadPendingBhw();
+                loadAllUsersAdmin();
+            }
+        }
+
+        function setupNavigation() {
+            document.querySelectorAll('[data-target]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.getAttribute('data-target');
+                    if (target) showSection(target);
+                });
+            });
+
+            const mobileToggle = document.getElementById('bcMobileToggle');
+            const mobileMenu = document.getElementById('bcMobileMenu');
+            if (mobileToggle && mobileMenu) {
+                mobileToggle.addEventListener('click', () => {
+                    mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+
+            const logoutBtn = document.getElementById('bcLogoutBtn');
+            const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+            if (logoutBtn) logoutBtn.addEventListener('click', logout);
+            if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', logout);
+        }
+
+        function showCreateForm() {
+            document.getElementById('create-form').style.display = 'block';
+        }
+
+        function hideCreateForm() {
+            document.getElementById('create-form').style.display = 'none';
+        }
+
+        // Announcements
+        document.getElementById('announcement-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+                const formData = new FormData();
+                formData.append('title', document.getElementById('ann-title').value);
+                formData.append('body', document.getElementById('ann-body').value);
+                formData.append('category', document.getElementById('ann-category').value);
+                formData.append('subcategory', document.getElementById('ann-subcategory').value);
+                formData.append('barangay', document.getElementById('ann-barangay').value);
+                formData.append('event_start_date', document.getElementById('ann-event-start').value);
+                formData.append('event_end_date', document.getElementById('ann-event-end').value);
+                if (document.getElementById('ann-emergency').checked) {
+                    formData.append('is_emergency', 'true');
+                }
+                const img = document.getElementById('ann-image').files[0];
+                if (img) formData.append('image', img);
+
+                await createAnnouncement(formData);
+                alert('Announcement created');
+                hideCreateForm();
+                e.target.reset();
+                loadAnnouncements();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        const ANNOUNCEMENT_SUBCATEGORIES = {
+            "Vaccination Programs": [
+                "Childhood Immunization",
+                "Anti-Rabies Vaccination for Pets",
+                "Flu Vaccination",
+                "COVID-19 Booster Shots",
+                "Free Anti-Rabies Vaccination at Barangay Hall",
+            ],
+            "Medical Check-up Missions": [
+                "Blood Pressure Check",
+                "Blood Sugar Test",
+                "General Consultation",
+                "Medicine Distribution",
+                "Medical Mission",
+            ],
+            "Maternal and Child Health Programs": [
+                "Prenatal Checkups",
+                "Nutrition Counseling",
+                "Infant Immunization",
+                "Breastfeeding Seminars",
+            ],
+            "Nutrition Programs": [
+                "Feeding Program for Children",
+                "Vitamin Distribution",
+                "Nutrition Month Activities",
+            ],
+            "Disease Prevention Campaigns": [
+                "Dengue Prevention Campaign",
+                "Mosquito Control",
+                "TB Screening",
+                "HIV Awareness",
+            ],
+            "Senior Citizen Health Programs": [
+                "Free Blood Pressure Monitoring",
+                "Diabetes Screening",
+                "Health Education Seminars",
+            ],
+            "Environmental Health Activities": [
+                "Clean-up Drive",
+                "Waste Management Seminar",
+                "Sanitation Inspection",
+            ],
+            "Emergency Health Announcements": [
+                "Dengue Outbreak Warning",
+                "Heat Index Alert",
+                "Disease Outbreak Information",
+            ],
+        };
+
+        function refreshAnnouncementSubcategories() {
+            const category = document.getElementById('ann-category').value;
+            const sub = document.getElementById('ann-subcategory');
+            if (!sub) return;
+
+            const options = ANNOUNCEMENT_SUBCATEGORIES[category] || [];
+            sub.innerHTML = '';
+            if (!category) {
+                sub.disabled = true;
+                sub.innerHTML = '<option value="">Select a category first</option>';
+                return;
+            }
+            sub.disabled = false;
+            sub.innerHTML = '<option value="">Select specific type</option>' + options.map(o => `<option value="${o}">${o}</option>`).join('');
+        }
+
+        const annCategoryEl = document.getElementById('ann-category');
+        if (annCategoryEl) {
+            annCategoryEl.addEventListener('change', refreshAnnouncementSubcategories);
+        }
+
+        (async function init() {
+            setupNavigation();
+            await loadCurrentUser();
+            showSection('system-section');
+        })();
+
+        let showingArchived = false;
+
+        function toggleArchivedView() {
+            showingArchived = !showingArchived;
+            const btn = document.getElementById('archived-toggle-btn');
+            const createBtn = document.getElementById('btn-create-announcement');
+            
+            if (showingArchived) {
+                hideCreateForm(); // Hide form if currently open
+                if (createBtn) createBtn.style.display = 'none'; // Hide create button
+                
+                btn.textContent = 'View Active';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-secondary');
+                loadArchivedAnnouncements();
+            } else {
+                if (createBtn) createBtn.style.display = 'inline-block'; // Show create button
+                
+                btn.textContent = 'View Archived';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-outline-secondary');
+                loadAnnouncements();
+            }
+        }
+
+        async function loadArchivedAnnouncements() {
+            try {
+                const response = await fetch(`${API_BASE}/announcements/archived`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load archived announcements');
+                const announcements = await response.json();
+                
+                const html = announcements.map(a => {
+                    const eventDatesHtml = (a.event_start_date || a.event_end_date) ? `
+                        <div class="mt-2 mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-event"></i> 
+                                ${a.event_start_date ? new Date(a.event_start_date).toLocaleDateString() : 'TBA'} 
+                                ${a.event_end_date ? ' - ' + new Date(a.event_end_date).toLocaleDateString() : ''}
+                            </small>
+                        </div>
+                    ` : '';
+                    
+                    return `
+                    <div class="card mb-4 announcement-card" data-id="${a.id}">
+                        ${a.image_url ? `
+                        <div class="announcement-image-container">
+                            <img src="${a.image_url}" class="announcement-image" alt="${a.title}">
+                        </div>
+                        ` : ''}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                <h4 class="card-title mb-0 fw-bold" style="font-size: 1.5rem;">${a.title} ${a.is_emergency ? '<span class="badge bg-danger">EMERGENCY</span>' : ''}</h4>
+                                <span class="badge bg-dark" style="font-size: 0.9rem;">ARCHIVED</span>
+                            </div>
+                            ${a.subcategory ? `<span class="badge bg-secondary mb-3" style="font-size: 0.85rem;">${a.subcategory}</span>` : ''}
+                            <p class="card-text" style="font-size: 1.1rem; line-height: 1.6;">${a.body}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                                <small class="text-muted" style="font-size: 0.95rem;">
+                                    <strong>Barangay:</strong> ${a.barangay} | Posted: ${new Date(a.created_at).toLocaleDateString()}
+                                </small>
+                                ${eventDatesHtml}
+                            </div>
+                            <hr class="my-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="d-flex align-items-center gap-4">
+                                    <span class="text-muted d-flex align-items-center gap-2" style="font-size: 1rem;" title="Views">
+                                        <i class="bi bi-eye fs-5"></i> ${a.view_count || 0}
+                                    </span>
+                                    <span class="text-danger d-flex align-items-center gap-2" style="font-size: 1rem;">
+                                        <i class="bi bi-heart fs-5"></i> ${a.like_count || 0}
+                                    </span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary" onclick="viewAnnouncementDetail(${a.id})">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    <button class="btn btn-success" onclick="restoreAnnouncement(${a.id})">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteAnnouncementPermanently(${a.id})">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+                document.getElementById('announcements-list').innerHTML = html || '<p class="text-muted fs-5">No archived announcements.</p>';
+            } catch (err) {
+                document.getElementById('announcements-list').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function restoreAnnouncement(id) {
+            if (!confirm('Restore this announcement? It will be posted as a new active announcement.')) return;
+            try {
+                await apiCall(`/announcements/${id}/restore`, { method: 'POST' });
+                alert('Announcement restored successfully');
+                if (showingArchived) {
+                    loadArchivedAnnouncements();
+                } else {
+                    loadAnnouncements();
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function deleteAnnouncementPermanently(id) {
+            if (!confirm('Are you sure you want to permanently delete this announcement? This action cannot be undone.')) return;
+            try {
+                await apiCall(`/announcements/${id}/permanent`, { method: 'DELETE' });
+                alert('Announcement permanently deleted');
+                if (showingArchived) {
+                    loadArchivedAnnouncements();
+                } else {
+                    loadAnnouncements();
+                }
+            } catch (err) {
+                alert('Error deleting announcement: ' + err.message);
+            }
+        }
+
+        async function loadAnnouncements() {
+            try {
+                const announcements = await getAnnouncements();
+                const html = announcements.map(a => {
+                    const eventDatesHtml = (a.event_start_date || a.event_end_date) ? `
+                        <div class="mt-2 mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-event"></i> 
+                                ${a.event_start_date ? new Date(a.event_start_date).toLocaleDateString() : 'TBA'} 
+                                ${a.event_end_date ? ' - ' + new Date(a.event_end_date).toLocaleDateString() : ''}
+                            </small>
+                        </div>
+                    ` : '';
+                    
+                    return `
+                    <div class="card mb-4 announcement-card" data-id="${a.id}">
+                        ${a.image_url ? `
+                        <div class="announcement-image-container">
+                            <img src="${a.image_url}" class="announcement-image" alt="${a.title}">
+                        </div>
+                        ` : ''}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                                <h4 class="card-title mb-0 fw-bold" style="font-size: 1.5rem;">${a.title} ${a.is_emergency ? '<span class="badge bg-danger">EMERGENCY</span>' : ''}</h4>
+                                <span class="badge bg-primary" style="font-size: 0.9rem;">${a.category}</span>
+                            </div>
+                            ${a.subcategory ? `<span class="badge bg-secondary mb-3" style="font-size: 0.85rem;">${a.subcategory}</span>` : ''}
+                            <p class="card-text" style="font-size: 1.1rem; line-height: 1.6;">${a.body}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                                <small class="text-muted" style="font-size: 0.95rem;">
+                                    <strong>Barangay:</strong> ${a.barangay} | Posted: ${new Date(a.created_at).toLocaleDateString()}
+                                </small>
+                                ${eventDatesHtml}
+                            </div>
+                            <hr class="my-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="d-flex align-items-center gap-4">
+                                    <span class="text-muted d-flex align-items-center gap-2" style="font-size: 1rem;" title="Views">
+                                        <i class="bi bi-eye fs-5"></i> ${a.view_count || 0}
+                                    </span>
+                                    <button class="btn ${a.user_has_liked ? 'btn-danger' : 'btn-outline-danger'} d-flex align-items-center gap-2" 
+                                            onclick="toggleLike(${a.id}, ${!a.user_has_liked})" 
+                                            title="${a.user_has_liked ? 'Unlike' : 'Like'}">
+                                        <i class="bi bi-heart${a.user_has_liked ? '-fill' : ''}"></i>
+                                        <span>${a.like_count || 0}</span>
+                                    </button>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary" onclick="viewAnnouncementDetail(${a.id})">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="editAnnouncement(${a.id})">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <button class="btn btn-danger" onclick="archiveAnnouncement(${a.id})">
+                                        <i class="bi bi-archive"></i> Archive
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+                document.getElementById('announcements-list').innerHTML = html || '<p class="text-muted fs-5">No active announcements.</p>';
+            } catch (err) {
+                document.getElementById('announcements-list').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function viewAnnouncementDetail(id) {
+            try {
+                const announcements = await getAnnouncements();
+                const a = announcements.find(ann => ann.id === id);
+                if (!a) return;
+                
+                // Increment view count
+                await fetch(`${API_BASE}/announcements/${id}/view`, { method: 'POST', credentials: 'include' });
+                
+                // Update the display count
+                const card = document.querySelector(`[data-id="${id}"]`);
+                if (card) {
+                    const viewEl = card.querySelector('.bi-eye.fs-5').parentElement;
+                    const currentCount = parseInt(viewEl.textContent.trim()) || 0;
+                    viewEl.innerHTML = `<i class="bi bi-eye fs-5"></i> ${currentCount + 1}`;
+                }
+                
+                // Show modal
+                const modalHtml = `
+                    <div class="modal fade" id="viewAnnModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">${a.title} ${a.is_emergency ? '<span class="badge bg-danger">EMERGENCY</span>' : ''}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    ${a.image_url ? `<img src="${a.image_url}" class="img-fluid rounded mb-3" style="max-height: 300px; width: 100%; object-fit: contain;">` : ''}
+                                    <div class="d-flex gap-2 mb-3">
+                                        <span class="badge bg-primary">${a.category}</span>
+                                        ${a.subcategory ? `<span class="badge bg-secondary">${a.subcategory}</span>` : ''}
+                                    </div>
+                                    <p style="font-size: 1.1rem; line-height: 1.6;">${a.body}</p>
+                                    <hr>
+                                    <div class="row text-muted">
+                                        <div class="col-md-6">
+                                            <p><strong>Barangay:</strong> ${a.barangay}</p>
+                                            <p><strong>Posted:</strong> ${new Date(a.created_at).toLocaleString()}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            ${a.event_start_date ? `<p><strong>Event Start:</strong> ${new Date(a.event_start_date).toLocaleDateString()}</p>` : ''}
+                                            ${a.event_end_date ? `<p><strong>Event End:</strong> ${new Date(a.event_end_date).toLocaleDateString()}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-4 mt-3">
+                                        <span class="text-muted"><i class="bi bi-eye"></i> ${(a.view_count || 0) + 1} views</span>
+                                        <span class="text-danger"><i class="bi bi-heart"></i> ${a.like_count || 0} likes</span>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="editAnnouncement(${a.id}); bootstrap.Modal.getInstance(document.getElementById('viewAnnModal')).hide();">Edit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('viewAnnModal');
+                if (existingModal) existingModal.remove();
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById('viewAnnModal'));
+                modal.show();
+            } catch (e) {
+                console.log('View detail failed:', e);
+            }
+        }
+
+        let currentEditId = null;
+
+        async function editAnnouncement(id) {
+            try {
+                const announcements = await getAnnouncements();
+                const a = announcements.find(ann => ann.id === id);
+                if (!a) return;
+                
+                currentEditId = id;
+                
+                const modalHtml = `
+                    <div class="modal fade" id="editAnnModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Edit Announcement</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="edit-announcement-form">
+                                        <div class="row mb-3">
+                                            <div class="col-md-8">
+                                                <label class="form-label fw-semibold">Title</label>
+                                                <input type="text" id="edit-ann-title" class="form-control form-control-lg" value="${a.title}" required>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Category</label>
+                                                <select id="edit-ann-category" class="form-control">
+                                                    <option value="Vaccination Programs" ${a.category === 'Vaccination Programs' ? 'selected' : ''}>Vaccination Programs</option>
+                                                    <option value="Medical Check-up Missions" ${a.category === 'Medical Check-up Missions' ? 'selected' : ''}>Medical Check-up Missions</option>
+                                                    <option value="Maternal and Child Health Programs" ${a.category === 'Maternal and Child Health Programs' ? 'selected' : ''}>Maternal and Child Health Programs</option>
+                                                    <option value="Nutrition Programs" ${a.category === 'Nutrition Programs' ? 'selected' : ''}>Nutrition Programs</option>
+                                                    <option value="Disease Prevention Campaigns" ${a.category === 'Disease Prevention Campaigns' ? 'selected' : ''}>Disease Prevention Campaigns</option>
+                                                    <option value="Senior Citizen Health Programs" ${a.category === 'Senior Citizen Health Programs' ? 'selected' : ''}>Senior Citizen Health Programs</option>
+                                                    <option value="Environmental Health Activities" ${a.category === 'Environmental Health Activities' ? 'selected' : ''}>Environmental Health Activities</option>
+                                                    <option value="Emergency Health Announcements" ${a.category === 'Emergency Health Announcements' ? 'selected' : ''}>Emergency Health Announcements</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Body</label>
+                                            <textarea id="edit-ann-body" class="form-control" rows="4" required>${a.body}</textarea>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Barangay</label>
+                                                <input type="text" id="edit-ann-barangay" class="form-control" value="${a.barangay}" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Emergency</label>
+                                                <div class="form-check mt-2">
+                                                    <input type="checkbox" id="edit-ann-emergency" class="form-check-input" ${a.is_emergency ? 'checked' : ''}>
+                                                    <label class="form-check-label">Mark as emergency announcement</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Event Start Date</label>
+                                                <input type="date" id="edit-ann-event-start" class="form-control" value="${a.event_start_date ? a.event_start_date.split('T')[0] : ''}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Event End Date</label>
+                                                <input type="date" id="edit-ann-event-end" class="form-control" value="${a.event_end_date ? a.event_end_date.split('T')[0] : ''}">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" onclick="saveAnnouncementEdit()">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('editAnnModal');
+                if (existingModal) existingModal.remove();
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById('editAnnModal'));
+                modal.show();
+            } catch (e) {
+                alert('Error loading announcement: ' + e.message);
+            }
+        }
+
+        async function saveAnnouncementEdit() {
+            if (!currentEditId) return;
+            
+            try {
+                const data = {
+                    title: document.getElementById('edit-ann-title').value,
+                    body: document.getElementById('edit-ann-body').value,
+                    category: document.getElementById('edit-ann-category').value,
+                    barangay: document.getElementById('edit-ann-barangay').value,
+                    is_emergency: document.getElementById('edit-ann-emergency').checked,
+                    event_start_date: document.getElementById('edit-ann-event-start').value || null,
+                    event_end_date: document.getElementById('edit-ann-event-end').value || null
+                };
+                
+                await apiCall(`/announcements/${currentEditId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                
+                bootstrap.Modal.getInstance(document.getElementById('editAnnModal')).hide();
+                alert('Announcement updated successfully');
+                loadAnnouncements();
+            } catch (err) {
+                alert('Error saving: ' + err.message);
+            }
+        }
+
+        async function toggleLike(id, shouldLike) {
+            try {
+                const response = await fetch(`${API_BASE}/announcements/${id}/${shouldLike ? 'like' : 'unlike'}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    loadAnnouncements(); // Refresh to update like status
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function archiveAnnouncement(id) {
+            if (!confirm('Archive this announcement? It will be moved to archived announcements.')) return;
+            try {
+                await apiCall(`/announcements/${id}`, { method: 'DELETE' });
+                alert('Archived successfully');
+                loadAnnouncements();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+
+
+        // Referrals
+        async function loadReferrals() {
+            try {
+                const referrals = await getReferrals();
+                const html = referrals.map(r => {
+                    const isCompleted = r.status === 'CLOSED' || r.status === 'ATTENDED';
+                    return `
+                    <div class="card">
+                        <h4>Referral ${r.referral_code}</h4>
+                        <p><strong>Center:</strong> ${r.referred_to_center}</p>
+                        <p><strong>Status:</strong> ${r.status}</p>
+                        <p><small>Generated: ${new Date(r.generated_at).toLocaleString()}</small></p>
+                        ${!isCompleted ? `<button class="btn btn-secondary" onclick="updateReferralStatus(${r.id})">Update Status</button>` : '<span class="badge bg-success">Completed</span>'}
+                        <button class="btn btn-primary" onclick="downloadReferral(${r.id}, '${r.referral_code}')">Download PDF</button>
+                    </div>
+                `;
+                }).join('');
+                document.getElementById('referrals-list').innerHTML = html || '<p>No referrals.</p>';
+            } catch (err) {
+                document.getElementById('referrals-list').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function downloadReferral(id, code) {
+            try {
+                const response = await fetch(`${API_BASE}/referrals/${id}/download`, {
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Failed to download');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `referral_${code}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('Error downloading PDF: ' + err.message);
+            }
+        }
+
+        async function updateReferralStatus(id) {
+            const status = prompt('Enter new status (PENDING, ATTENDED, CLOSED):');
+            if (!status) return;
+            try {
+                await apiCall(`/referrals/${id}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                alert('Updated');
+                loadReferrals();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Admin Tools
+        async function loadPendingBhw() {
+            const el = document.getElementById('pending-bhw-list');
+            if (!el) return;
+            el.innerHTML = '<p>Loading...</p>';
+            try {
+                const data = await apiCall('/admin/pending-bhw');
+                const pending = (data && data.pending_users) ? data.pending_users : [];
+                if (!pending.length) {
+                    el.innerHTML = '<p>No pending BHW accounts.</p>';
+                    return;
+                }
+                el.innerHTML = pending.map(u => `
+                    <div class="card" style="margin: 10px 0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                            <div>
+                                <strong>${u.username}</strong><br>
+                                <small>${u.email}</small>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-success" onclick="approveBhw(${u.id})">Approve</button>
+                                <button class="btn btn-danger" onclick="rejectBhw(${u.id})">Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                el.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function rejectBhw(userId) {
+            if (!confirm('Reject and delete this pending BHW account?')) return;
+            try {
+                await apiCall(`/admin/reject-bhw/${userId}`, { method: 'DELETE' });
+                alert('Rejected');
+                loadPendingBhw();
+                loadAllUsersAdmin();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function loadAllUsersAdmin() {
+            const el = document.getElementById('admin-users-list');
+            if (!el) return;
+            el.innerHTML = '<p>Loading...</p>';
+            try {
+                const data = await apiCall('/admin/all-users');
+                const users = (data && data.users) ? data.users : [];
+                if (!users.length) {
+                    el.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+                el.innerHTML = users.map(u => {
+                    const deleteDisabled = u.role === 'ADMIN';
+                    return `
+                        <div class="card" style="margin: 10px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                                <div>
+                                    <strong>${u.username}</strong> <small>(${u.role})</small><br>
+                                    <small>${u.email}</small><br>
+                                    <small>Approved: ${u.is_approved ? 'Yes' : 'No'}</small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-danger" ${deleteDisabled ? 'disabled' : ''} onclick="deleteUserAdmin(${u.id}, '${u.username}')">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                el.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+
+        async function deleteUserAdmin(userId, username) {
+            if (!confirm(`Delete user ${username}? This cannot be undone.`)) return;
+            try {
+                await apiCall(`/admin/users/${userId}`, { method: 'DELETE' });
+                alert('Deleted');
+                loadAllUsersAdmin();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await logoutUser();
+            } catch (e) {
+                // ignore
+            }
+            window.location.href = 'login.html';
+        }
+
+        // Users/Profiles
+        async function searchUsers() {
+            const query = document.getElementById('search-user').value;
+            const list = document.getElementById('users-list');
+            if (!list) return;
+            
+            list.innerHTML = '<p><i class="bi bi-arrow-clockwise"></i> Loading residents...</p>';
+            
+            try {
+                // Backend defaults to RESIDENT-only
+                const url = query && query.trim() 
+                    ? `/profile/search?q=${encodeURIComponent(query.trim())}`
+                    : '/profile/search';
+                
+                const results = await apiCall(url);
+                
+                if (!results || !results.length) {
+                    list.innerHTML = `<p class="alert alert-info">${query ? 'No residents found matching "' + query + '".' : 'No registered residents found.'}</p>`;
+                    return;
+                }
+                
+                list.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-3 sticky-top bg-white pt-2 pb-2 border-bottom">
+                        <h6 class="mb-0"><i class="bi bi-people"></i> ${results.length} Registered Resident${results.length > 1 ? 's' : ''}</h6>
+                        ${query ? `<button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('search-user').value=''; searchUsers();"><i class="bi bi-x"></i> Clear</button>` : ''}
+                    </div>
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        ${results.map(u => `
+                            <div class="card mb-3 p-3">
+                                <div class="row align-items-center">
+                                    <!-- User info -->
+                                    <div class="col">
+                                        <h6 class="mb-1 fw-bold">${u.full_name || u.username}</h6>
+                                        <p class="text-muted small mb-1">
+                                            <i class="bi bi-person"></i> ${u.username} | 
+                                            <i class="bi bi-geo-alt"></i> ${u.barangay || 'N/A'}
+                                        </p>
+                                        <p class="text-muted small mb-0">
+                                            <i class="bi bi-telephone"></i> ${u.contact_number || 'N/A'} | 
+                                            <i class="bi bi-envelope"></i> ${u.email}
+                                        </p>
+                                    </div>
+                                    <!-- Action buttons on RIGHT -->
+                                    <div class="col-auto ps-3">
+                                        <div class="d-flex flex-column gap-2">
+                                            <button class="btn btn-primary btn-sm" onclick="viewResidentProfile(${u.id}, '${u.full_name || u.username}')" title="View Health Profile">
+                                                <i class="bi bi-eye"></i> Show Profile
+                                            </button>
+                                            <button class="btn btn-success btn-sm" onclick="downloadResidentProfile(${u.id}, '${u.full_name || u.username}')" title="Download Health Profile PDF">
+                                                <i class="bi bi-download"></i> Download
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                list.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+            }
+        }
+        
+        // View resident profile modal
+        async function viewResidentProfile(userId, userName) {
+            try {
+                const profile = await apiCall(`/profile/${userId}`);
+                
+                const modalHtml = `
+                    <div class="modal fade" id="viewResidentModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title"><i class="bi bi-person-vcard"></i> ${userName}'s Health Profile</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <h6 class="text-primary border-bottom pb-1"><i class="bi bi-person-vcard"></i> I. PERSONAL IDENTIFICATION</h6>
+                                        <div class="row g-2 small">
+                                            <div class="col-6"><strong>Name:</strong> ${profile.last_name || ''}${profile.last_name && profile.first_name ? ', ' : ''}${profile.first_name || ''}${profile.middle_name ? ' ' + profile.middle_name : ''}</div>
+                                            <div class="col-6"><strong>Age:</strong> ${profile.age || 'N/A'}</div>
+                                            <div class="col-6"><strong>Sex:</strong> ${profile.sex || 'N/A'}</div>
+                                            <div class="col-6"><strong>Civil Status:</strong> ${profile.civil_status || 'N/A'}</div>
+                                            <div class="col-12"><strong>Address:</strong> ${profile.address || 'N/A'}</div>
+                                            <div class="col-6"><strong>Contact:</strong> ${profile.contact_number || 'N/A'}</div>
+                                            <div class="col-6"><strong>PhilHealth:</strong> ${profile.philhealth_id || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="text-primary border-bottom pb-1"><i class="bi bi-heart-pulse"></i> II. MEDICAL HISTORY</h6>
+                                        <div class="row g-2 small">
+                                            <div class="col-6"><strong>Blood Type:</strong> ${profile.blood_type || 'N/A'}</div>
+                                            <div class="col-6"><strong>PWD ID:</strong> ${profile.pwd_id || 'N/A'}</div>
+                                            <div class="col-12"><strong>Allergies:</strong> ${profile.allergies || 'None'}</div>
+                                            <div class="col-12"><strong>Chronic Conditions:</strong> ${profile.chronic_conditions || 'None'}</div>
+                                            <div class="col-12"><strong>Medications:</strong> ${profile.current_medications || 'None'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="text-primary border-bottom pb-1"><i class="bi bi-shield-check"></i> III. PUBLIC HEALTH PROGRAMS</h6>
+                                        <div class="small">
+                                            <p class="mb-1"><strong>COVID-19 Vaccination:</strong> ${profile.covid_vaccination || 'N/A'}</p>
+                                            <p class="mb-1"><strong>Other Immunizations:</strong> ${profile.other_immunizations || 'N/A'}</p>
+                                            <p class="mb-1"><strong>Maternal/Child Health:</strong> ${profile.maternal_child_health || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="text-primary border-bottom pb-1"><i class="bi bi-telephone-emergency"></i> IV. EMERGENCY CONTACT</h6>
+                                        <div class="row g-2 small">
+                                            <div class="col-12"><strong>Contact Person:</strong> ${profile.emergency_contact_person || 'N/A'}</div>
+                                            <div class="col-6"><strong>Relationship:</strong> ${profile.emergency_contact_relationship || 'N/A'}</div>
+                                            <div class="col-6"><strong>Number:</strong> ${profile.emergency_contact_number || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-success" onclick="downloadResidentProfile(${userId}, '${userName}')">
+                                        <i class="bi bi-download"></i> Download PDF
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const existing = document.getElementById('viewResidentModal');
+                if (existing) existing.remove();
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                new bootstrap.Modal(document.getElementById('viewResidentModal')).show();
+                
+            } catch (err) {
+                alert('Failed to load profile: ' + err.message);
+            }
+        }
+        
+        // Download resident profile as PDF
+        async function downloadResidentProfile(userId, userName) {
+            try {
+                const profile = await apiCall(`/profile/${userId}`);
+                
+                const printHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Health Profile - ${userName}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+                            .header { text-align: center; border-bottom: 3px solid #0d6efd; padding-bottom: 20px; margin-bottom: 30px; }
+                            .header h1 { color: #0d6efd; margin: 0; }
+                            .header p { margin: 5px 0; color: #666; }
+                            .section { margin-bottom: 25px; }
+                            .section-title { color: #0d6efd; font-size: 16px; font-weight: bold; border-bottom: 2px solid #0d6efd; padding-bottom: 5px; margin-bottom: 15px; }
+                            .row { display: flex; flex-wrap: wrap; margin-bottom: 8px; }
+                            .col-6 { width: 50%; padding-right: 20px; }
+                            .col-12 { width: 100%; }
+                            .label { font-weight: bold; color: #555; }
+                            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; font-size: 12px; color: #999; }
+                            @media print { .no-print { display: none; } }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>BARANGAY HEALTH PROFILE</h1>
+                            <p>BAYANCARE Digital Health System</p>
+                            <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">I. PERSONAL IDENTIFICATION</div>
+                            <div class="row"><div class="col-6"><span class="label">Name:</span> ${profile.full_name || 'N/A'}</div><div class="col-6"><span class="label">Age:</span> ${profile.age || 'N/A'}</div></div>
+                            <div class="row"><div class="col-6"><span class="label">Sex:</span> ${profile.sex || 'N/A'}</div><div class="col-6"><span class="label">DOB:</span> ${profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : 'N/A'}</div></div>
+                            <div class="row"><div class="col-6"><span class="label">Civil Status:</span> ${profile.civil_status || 'N/A'}</div><div class="col-6"><span class="label">PhilHealth:</span> ${profile.philhealth_id || 'N/A'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Address:</span> ${profile.address || 'N/A'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Contact:</span> ${profile.contact_number || 'N/A'}</div></div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">II. MEDICAL HISTORY & SOCIAL DETERMINANTS</div>
+                            <div class="row"><div class="col-6"><span class="label">Blood Type:</span> ${profile.blood_type || 'N/A'}</div><div class="col-6"><span class="label">PWD ID:</span> ${profile.pwd_id || 'N/A'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Allergies:</span> ${profile.allergies || 'None'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Chronic Conditions:</span> ${profile.chronic_conditions || 'None'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Medications:</span> ${profile.current_medications || 'None'}</div></div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">III. PUBLIC HEALTH PROGRAM STATUS</div>
+                            <div class="row"><div class="col-12"><span class="label">COVID-19 Vaccination:</span> ${profile.covid_vaccination || 'N/A'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Other Immunizations:</span> ${profile.other_immunizations || 'N/A'}</div></div>
+                            <div class="row"><div class="col-12"><span class="label">Maternal & Child Health:</span> ${profile.maternal_child_health || 'N/A'}</div></div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">IV. EMERGENCY CONTACT INFO</div>
+                            <div class="row"><div class="col-12"><span class="label">Contact Person:</span> ${profile.emergency_contact_person || 'N/A'}</div></div>
+                            <div class="row"><div class="col-6"><span class="label">Relationship:</span> ${profile.emergency_contact_relationship || 'N/A'}</div><div class="col-6"><span class="label">Number:</span> ${profile.emergency_contact_number || 'N/A'}</div></div>
+                        </div>
+                        
+                        <div class="footer no-print">
+                            <p>Generated by BAYANCARE - Barangay Health Advisory System</p>
+                            <button onclick="window.print()" style="padding: 10px 20px; background: #0d6efd; color: white; border: none; border-radius: 5px; cursor: pointer;">Print / Save as PDF</button>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                const win = window.open('', '_blank');
+                win.document.write(printHtml);
+                win.document.close();
+                
+            } catch (err) {
+                alert('Failed to download profile: ' + err.message);
+            }
+        }
+
+        // Recovery Management Functions
+        async function loadRecoveryDashboard() {
+            const listEl = document.getElementById('recovery-list');
+            const statsEl = document.getElementById('recovery-stats');
+            
+            if (listEl) listEl.innerHTML = '<div class="bc-skeleton" style="height: 120px; width: 100%; margin-bottom: 15px;"></div><div class="bc-skeleton" style="height: 120px; width: 100%;"></div>';
+            if (statsEl) statsEl.innerHTML = '<div class="bc-skeleton" style="height: 100px; width: 100%;"></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/recovery/dashboard`);
+                const data = await response.json();
+                
+                // Display recovery stats
+                document.getElementById('recovery-stats').innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #007bff;">
+                            <h4>Active Recoveries</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${data.total_active_recoveries}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #28a745;">
+                            <h4>Due Today</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${data.due_today}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #ffc107;">
+                            <h4>Due Soon (3 days)</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${data.due_soon}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #dc3545;">
+                            <h4>Overdue</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${data.overdue}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #6c757d;">
+                            <h4>Pending Notifications</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${data.pending_notifications}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Display recent assessments with recovery tracking
+                const recoveryListHtml = data.recent_assessments.map(assessment => {
+                    const statusColor = assessment.recovery_notified ? '#28a745' : '#ffc107';
+                    const daysText = assessment.days_until_recovery !== null ? 
+                        (assessment.days_until_recovery < 0 ? `${Math.abs(assessment.days_until_recovery)} days overdue` :
+                         assessment.days_until_recovery === 0 ? 'Due today' :
+                         `${assessment.days_until_recovery} days remaining`) : 'N/A';
+                    
+                    return `
+                        <div class="card" style="margin-bottom: 15px; border-left: 4px solid ${statusColor}; border-radius: 8px;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1"><i class="bi bi-person"></i> ${assessment.username}</h6>
+                                        <p class="mb-1 small">
+                                            <strong>Risk Level:</strong> <span class="badge ${assessment.risk_level === 'HIGH' ? 'bg-danger' : assessment.risk_level === 'MODERATE' ? 'bg-warning text-dark' : 'bg-primary'}">${assessment.risk_level}</span> | 
+                                            <strong>Status:</strong> ${daysText}
+                                        </p>
+                                    </div>
+                                    <div class="text-end" style="min-width: 140px;">
+                                        <p class="mb-1 small"><strong>Notification:</strong> <span class="badge ${assessment.recovery_notified ? 'bg-success' : 'bg-warning text-dark'}">${assessment.recovery_notified ? 'Sent' : 'Pending'}</span></p>
+                                        <small class="text-muted d-block mt-1">End: ${assessment.recovery_end_date ? new Date(assessment.recovery_end_date).toLocaleDateString() : 'N/A'}</small>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-sm btn-outline-secondary w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#bhwRecoveryDetails-${assessment.id}">
+                                    View Patient Details
+                                </button>
+                                
+                                <div class="collapse mb-2" id="bhwRecoveryDetails-${assessment.id}">
+                                    <div class="p-2 bg-light rounded small border mb-2">
+                                        <strong>Symptoms:</strong><br>
+                                        ${assessment.symptoms.map(s => `<span class="badge bg-secondary me-1 mb-1">${s}</span>`).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm flex-grow-1" onclick="editRecoveryDate(${assessment.id})">
+                                        <i class="bi bi-calendar-event"></i> Edit Date
+                                    </button>
+                                    <button class="btn btn-sm flex-grow-1 ${assessment.recovery_notified ? 'btn-outline-secondary' : 'btn-success'}" 
+                                            onclick="${assessment.recovery_notified ? '' : `sendRecoveryNotification(${assessment.id})`}" 
+                                            ${assessment.recovery_notified ? 'disabled' : ''}>
+                                        <i class="bi bi-envelope"></i> ${assessment.recovery_notified ? 'Sent' : 'Notify'}
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm flex-grow-1" onclick="viewRecoveryTimeline(${assessment.id})">
+                                        <i class="bi bi-bar-chart"></i> Timeline
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                if (listEl) listEl.innerHTML = recoveryListHtml || '<div class="bc-empty-state"><i class="bi bi-activity"></i><h6>No Active Recoveries</h6><p class="small mb-0">No active patient tracking at this time.</p></div>';
+                
+            } catch (err) {
+                console.error('Error loading recovery dashboard:', err);
+                document.getElementById('recovery-list').innerHTML = `<div class="alert alert-danger">Error loading recovery data: ${err.message}</div>`;
+            }
+        }
+
+        async function editRecoveryDate(assessmentId) {
+            const newDate = prompt('Enter new recovery date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!newDate) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/recovery/assessment/${assessmentId}/recovery-dates`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recovery_end_date: newDate
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Recovery date updated successfully!');
+                    loadRecoveryDashboard();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (err) {
+                alert('Error updating recovery date: ' + err.message);
+            }
+        }
+
+        async function sendRecoveryNotification(assessmentId) {
+            if (!confirm('Send recovery notification to patient?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/recovery/assessment/${assessmentId}/send-notification`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('Recovery notification sent successfully!');
+                    loadRecoveryDashboard();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (err) {
+                alert('Error sending notification: ' + err.message);
+            }
+        }
+
+        async function viewRecoveryTimeline(assessmentId) {
+            try {
+                const response = await fetch(`${API_BASE}/recovery/assessment/${assessmentId}/timeline`);
+                const timeline = await response.json();
+                
+                const message = `
+Recovery Timeline for Assessment #${timeline.assessment_id}:
+
+Start Date: ${timeline.recovery_start_date ? new Date(timeline.recovery_start_date).toLocaleDateString() : 'N/A'}
+End Date: ${timeline.recovery_end_date ? new Date(timeline.recovery_end_date).toLocaleDateString() : 'N/A'}
+Days Until Recovery: ${timeline.days_until_recovery !== null ? timeline.days_until_recovery : 'N/A'}
+Status: ${timeline.recovery_status || 'N/A'}
+Notification Sent: ${timeline.recovery_notified ? 'Yes' : 'No'}
+
+This timeline helps track patient recovery progress and send timely follow-up notifications.
+                `;
+                
+                alert(message);
+            } catch (err) {
+                alert('Error loading timeline: ' + err.message);
+            }
+        }
+
+        let showingArchivedRecoveries = false;
+
+        function toggleArchivedRecoveries() {
+            showingArchivedRecoveries = !showingArchivedRecoveries;
+            const btn = document.getElementById('archived-recovery-btn');
+            const title = document.getElementById('recovery-list-title');
+            const stats = document.getElementById('recovery-stats');
+            
+            if (showingArchivedRecoveries) {
+                btn.textContent = 'View Active';
+                btn.classList.remove('btn-outline-dark');
+                btn.classList.add('btn-dark');
+                title.textContent = 'Archived Overdue & Completed Recoveries';
+                stats.style.display = 'none'; // Hide stats when viewing archived
+                loadArchivedRecoveries();
+            } else {
+                btn.textContent = 'View Archived';
+                btn.classList.remove('btn-dark');
+                btn.classList.add('btn-outline-dark');
+                title.textContent = 'Active Patient Recoveries';
+                stats.style.display = 'block';
+                loadRecoveryDashboard();
+            }
+        }
+
+        async function loadArchivedRecoveries() {
+            const listContainer = document.getElementById('recovery-list');
+            listContainer.innerHTML = '<div class="bc-skeleton" style="height: 120px; width: 100%; margin-bottom: 15px;"></div><div class="bc-skeleton" style="height: 120px; width: 100%;"></div>';
+            try {
+                const response = await fetch(`${API_BASE}/recovery/archived-recoveries`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load archived recoveries');
+                const data = await response.json();
+                
+                if (!data.archived_recoveries || data.archived_recoveries.length === 0) {
+                    listContainer.innerHTML = '<div class="bc-empty-state"><i class="bi bi-archive"></i><h6>No Archived Recoveries</h6><p class="small mb-0">There are no archived health recoveries found.</p></div>';
+                    return;
+                }
+                
+                const recoveryListHtml = data.archived_recoveries.map(assessment => {
+                    const statusColor = assessment.archive_reason === 'overdue' ? '#dc3545' : '#6c757d';
+                    const archiveBadge = assessment.archive_reason === 'overdue' 
+                        ? '<span class="badge bg-danger">OVERDUE</span>' 
+                        : '<span class="badge bg-secondary">COMPLETED</span>';
+                    const daysText = assessment.days_until_recovery !== null ? 
+                        (assessment.days_until_recovery < 0 ? `${Math.abs(assessment.days_until_recovery)} days overdue` :
+                         assessment.days_until_recovery === 0 ? 'Due today' :
+                         `${assessment.days_until_recovery} days remaining`) : 'N/A';
+                    
+                    return `
+                        <div class="card" style="margin-bottom: 15px; border-left: 4px solid ${statusColor}; opacity: 0.8;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h4>${assessment.username} - ${assessment.symptoms.join(', ')} ${archiveBadge}</h4>
+                                    <p><strong>Risk Level:</strong> ${assessment.risk_level}</p>
+                                    <p><strong>Recovery Date:</strong> ${assessment.recovery_end_date ? new Date(assessment.recovery_end_date).toLocaleDateString() : 'N/A'}</p>
+                                    <p><strong>Status:</strong> ${daysText}</p>
+                                    <p><strong>Final Status:</strong> ${assessment.status}</p>
+                                    <p><strong>Notification:</strong> ${assessment.recovery_notified ? 'Sent' : 'Pending'}</p>
+                                </div>
+                                <div style="display: flex; gap: 10px; flex-direction: column;">
+                                    <button class="btn btn-info" onclick="viewRecoveryTimeline(${assessment.id})" style="font-size: 12px; padding: 5px 10px;">
+                                        📊 Timeline
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('recovery-list').innerHTML = recoveryListHtml;
+                
+            } catch (err) {
+                console.error('Error loading archived recoveries:', err);
+                document.getElementById('recovery-list').innerHTML = `<div class="alert alert-danger">Error loading archived data: ${err.message}</div>`;
+            }
+        }
+
+        async function checkDueNotifications() {
+            try {
+                const response = await fetch(`${API_BASE}/recovery/check-due-notifications`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                alert(`Notification check completed!\n\nNotifications sent: ${result.notifications_sent}\n\n${result.message}`);
+                loadRecoveryDashboard();
+            } catch (err) {
+                alert('Error checking notifications: ' + err.message);
+            }
+        }
+        async function loadSystemStats() {
+            try {
+                const stats = await apiCall('/admin/stats');
+                
+                document.getElementById('system-stats').innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #007bff; cursor: pointer;" onclick="showSection('users-section')" title="Click to view users">
+                            <h4>Total Users</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${stats.total_users}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #28a745; cursor: pointer;" onclick="showSection('recovery-section')" title="Click to view recovery tracking">
+                            <h4>Assessments</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${stats.total_assessments}</p>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px;">
+                                <div style="text-align: center; padding: 8px; background: #e8f5e9; border-radius: 6px;">
+                                    <div style="font-size: 16px; font-weight: bold; color: #2e7d32;">${stats.recovered_from_home_care || 0}</div>
+                                    <small style="color: #4caf50; font-size: 10px;">Recovered</small>
+                                </div>
+                                <div style="text-align: center; padding: 8px; background: #ffebee; border-radius: 6px; cursor: pointer;" onclick="event.stopPropagation(); showSection('consultations-section'); setTimeout(() => loadPendingConsultations('ASSIGNED'), 100);" title="Click to view consultations needing referral (ASSIGNED). Total awaiting pickup: ${stats.pending_consultations || 0}">
+                                    <div style="font-size: 16px; font-weight: bold; color: #c62828;">${(stats.needs_referral_now !== undefined ? stats.needs_referral_now : stats.pending_consultations) || 0}</div>
+                                    <small style="color: #e53935; font-size: 10px;">Needs Referral</small>
+                                </div>
+                                <div style="text-align: center; padding: 8px; background: #fff3e0; border-radius: 6px;">
+                                    <div style="font-size: 16px; font-weight: bold; color: #ef6c00;">${stats.same_status_count || 0}</div>
+                                    <small style="color: #f57c00; font-size: 10px;">Extended Care</small>
+                                </div>
+                                <div style="text-align: center; padding: 8px; background: #f3e5f5; border-radius: 6px;">
+                                    <div style="font-size: 16px; font-weight: bold; color: #7b1fa2;">${stats.pending_response_count || 0}</div>
+                                    <small style="color: #9c27b0; font-size: 10px;">Pending</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #ffc107; cursor: pointer;" onclick="showSection('referrals-section')" title="Click to view referrals">
+                            <h4>Referrals</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${stats.total_referrals}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #17a2b8; cursor: pointer;" onclick="showSection('announcements-section')" title="Click to view announcements">
+                            <h4>Active Announcements</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${stats.active_announcements}</p>
+                        </div>
+                        <div class="card" style="background: #f8f9fa; border-left: 4px solid #6f42c1; cursor: pointer;" onclick="showSection('admin-section')" title="Click to view pending BHW approvals">
+                            <h4>Pending BHW</h4>
+                            <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">${stats.pending_bhw}</p>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('system-stats').innerHTML = `<div class="alert alert-danger">Error loading stats: ${err.message}</div>`;
+            }
+        }
+
+        async function logout() {
+            try {
+                await apiCall('/auth/logout', { method: 'POST' });
+                alert('Logged out');
+                window.location.href = 'index.html';
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Consultation functions for BHW/Admin
+        async function loadPendingConsultations(statusFilter = 'ALL') {
+            const container = document.getElementById("bcConsultationsList");
+            if (!container) return;
+            
+            container.innerHTML = '<div class="bc-skeleton" style="height: 120px; width: 100%; margin-bottom: 15px;"></div><div class="bc-skeleton" style="height: 120px; width: 100%;"></div>';
+            
+            try {
+                const data = await apiCall("/consultations/pending?status=" + statusFilter, { method: "GET" });
+                
+                // Update the section heading based on the active filter
+                const headingTitles = {
+                    'PENDING': 'Pending Consultations',
+                    'ASSIGNED': 'Assigned Consultations',
+                    'COMPLETED': 'Completed Consultations',
+                    'ALL': 'All Consultations'
+                };
+                const sectionHeading = document.getElementById('consultations-section-heading');
+                if (sectionHeading) {
+                    sectionHeading.innerHTML = `<i class="bi bi-bell"></i> ${headingTitles[statusFilter] || 'Consultations'}`;
+                }
+
+                if (!data.consultations || data.consultations.length === 0) {
+                    const emptyMessages = {
+                        'PENDING': 'No pending consultations.',
+                        'ASSIGNED': 'No assigned consultations.',
+                        'COMPLETED': 'No completed consultations.',
+                        'ALL': 'No consultations found.'
+                    };
+                    container.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadPendingConsultations('ALL')">
+                                    <i class="bi bi-arrow-left"></i> Back
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary ${statusFilter === 'PENDING' ? 'active' : ''}" onclick="loadPendingConsultations('PENDING')">
+                                    <i class="bi bi-clock"></i> Pending
+                                </button>
+                                <button class="btn btn-sm btn-outline-info ${statusFilter === 'ASSIGNED' ? 'active' : ''}" onclick="loadPendingConsultations('ASSIGNED')">
+                                    <i class="bi bi-person-check"></i> Assigned
+                                </button>
+                                <button class="btn btn-sm btn-outline-success ${statusFilter === 'COMPLETED' ? 'active' : ''}" onclick="loadPendingConsultations('COMPLETED')">
+                                    <i class="bi bi-check-circle"></i> Completed
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary ${statusFilter === 'ALL' ? 'active' : ''}" onclick="loadPendingConsultations('ALL')">
+                                    <i class="bi bi-list"></i> All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bc-empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <h6>No Consultations</h6>
+                            <p class="small mb-0">${emptyMessages[statusFilter] || 'No consultations found.'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="loadPendingConsultations('ALL')">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </button>
+                            <h6 class="mb-0"><i class="bi bi-bell"></i> ${data.count} Consultation${data.count > 1 ? 's' : ''}</h6>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary ${statusFilter === 'PENDING' ? 'active' : ''}" onclick="loadPendingConsultations('PENDING')">
+                                <i class="bi bi-clock"></i> Pending
+                            </button>
+                            <button class="btn btn-sm btn-outline-info ${statusFilter === 'ASSIGNED' ? 'active' : ''}" onclick="loadPendingConsultations('ASSIGNED')">
+                                <i class="bi bi-person-check"></i> Assigned
+                            </button>
+                            <button class="btn btn-sm btn-outline-success ${statusFilter === 'COMPLETED' ? 'active' : ''}" onclick="loadPendingConsultations('COMPLETED')">
+                                <i class="bi bi-check-circle"></i> Completed
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ${statusFilter === 'ALL' ? 'active' : ''}" onclick="loadPendingConsultations('ALL')">
+                                <i class="bi bi-list"></i> All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="consultation-list" style="max-height: 600px; overflow-y: auto;">
+                        ${data.consultations.map(c => {
+                            const statusColors = {
+                                'PENDING': { border: 'border-warning', header: 'bg-warning text-dark', badge: 'bg-warning text-dark', icon: 'bi-clock' },
+                                'ASSIGNED': { border: 'border-info', header: 'bg-info text-white', badge: 'bg-info', icon: 'bi-person-check' },
+                                'COMPLETED': { border: 'border-success', header: 'bg-success text-white', badge: 'bg-success', icon: 'bi-check-circle' }
+                            };
+                            const colors = statusColors[c.status] || statusColors['PENDING'];
+                            return `
+                            <div class="card mb-3 ${colors.border}">
+                                <div class="card-header ${colors.header} d-flex justify-content-between align-items-center">
+                                    <strong><i class="bi ${colors.icon}"></i> ${c.status} - Consultation #${c.id}</strong>
+                                    <span class="badge bg-danger">${c.risk_level}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong><i class="bi bi-person"></i> Resident:</strong> ${c.resident_name}
+                                            <div class="bc-muted small">@${c.resident_username || 'username'} | ${c.resident_barangay || 'N/A'}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong><i class="bi bi-calendar"></i> Requested:</strong><br>
+                                            <small>${new Date(c.created_at).toLocaleDateString()}</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="btn btn-sm btn-outline-secondary w-100 mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#consultDetails-${c.id}" aria-expanded="false" aria-controls="consultDetails-${c.id}">
+                                        View Patient Details
+                                    </button>
+
+                                    <div class="collapse mb-3" id="consultDetails-${c.id}">
+                                        <div class="p-3 bg-light rounded small border">
+                                            <div class="mb-2"><strong><i class="bi bi-telephone"></i> Contact:</strong> ${c.resident_contact || 'N/A'}</div>
+                                            <div class="mb-2">
+                                                <strong><i class="bi bi-activity"></i> Symptoms:</strong><br>
+                                                ${c.symptoms ? JSON.parse(c.symptoms).map(s => `<span class="badge bg-secondary me-1 mb-1">${s}</span>`).join('') : 'No symptoms recorded'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2 d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <strong><i class="bi bi-info-circle"></i> Status:</strong> <span class="badge ${colors.badge}">${c.status}</span>
+                                        </div>
+                                        ${c.assigned_bhw_id ? `
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-person-check"></i> BHW: ${c.assigned_bhw_name}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+
+                                    ${c.status === 'COMPLETED' && c.referral_id ? `
+                                        <div class="alert alert-success py-2 mb-2 small">
+                                            <i class="bi bi-check-circle"></i> Referral Generated: <strong>${c.referral_code || 'N/A'}</strong>
+                                        </div>
+                                    ` : ''}
+                                    <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                                        ${c.status === 'PENDING' ? `
+                                            <button class="btn btn-primary btn-sm flex-grow-1" onclick="assignConsultation(${c.id}, this)">
+                                                <i class="bi bi-person-check"></i> Assign to Me First
+                                            </button>
+                                        ` : ''}
+                                        ${c.status === 'ASSIGNED' && (c.assigned_bhw_id === currentUser?.id || currentUser?.role === 'ADMIN') ? `
+                                            <button class="btn btn-success btn-sm flex-grow-1" onclick="generateReferralFromConsultation(${c.id}, '${c.resident_name}', '${c.symptoms ? JSON.parse(c.symptoms).join(", ").replace(/'/g, "\\'") : ''}')">
+                                                <i class="bi bi-file-earmark-medical"></i> Generate Referral
+                                            </button>
+                                        ` : ''}
+                                        ${c.status === 'ASSIGNED' && c.assigned_bhw_id !== currentUser?.id && currentUser?.role !== 'ADMIN' ? `
+                                            <button class="btn btn-secondary btn-sm flex-grow-1" disabled>
+                                                <i class="bi bi-lock"></i> Assigned to ${c.assigned_bhw_name}
+                                            </button>
+                                        ` : ''}
+                                        ${c.status === 'COMPLETED' && c.referral_id ? `
+                                            <button class="btn btn-outline-success" onclick="downloadReferral(${c.referral_id}, '${c.referral_code}')">
+                                                <i class="bi bi-download"></i> Download Referral
+                                            </button>
+                                        ` : ''}
+                                        <button class="btn btn-outline-primary" onclick="viewConsultationDetails(${c.id})">
+                                            <i class="bi bi-eye"></i> View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `}).join('')}
+                    </div>
+                `;
+                
+            } catch (err) {
+                console.error("Failed to load consultations:", err);
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Failed to load consultations: ${err.message}
+                        <button class="btn btn-outline-primary btn-sm ms-2" onclick="loadPendingConsultations()">
+                            <i class="bi bi-arrow-clockwise"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        async function assignConsultation(consultationId, btnElement) {
+            const originalHtml = btnElement.innerHTML;
+            try {
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                const response = await apiCall(`/consultations/${consultationId}/assign`, {
+                    method: "POST"
+                });
+                
+                alert("Consultation assigned to you successfully!");
+                loadPendingConsultations();
+                
+            } catch (err) {
+                console.error("Failed to assign consultation:", err);
+                alert("Failed to assign consultation: " + err.message);
+            } finally {
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalHtml;
+            }
+        }
+        
+        async function generateReferralFromConsultation(consultationId, residentName, symptoms) {
+            try {
+                const modalHtml = `
+                    <div class="modal fade" id="generateReferralModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title"><i class="bi bi-file-earmark-medical"></i> Generate Referral</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-info">
+                                        <strong><i class="bi bi-person"></i> Resident:</strong> ${residentName}<br>
+                                        <strong><i class="bi bi-activity"></i> Symptoms:</strong> ${symptoms || 'N/A'}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Referral Center:</strong></label>
+                                        <input type="text" id="referralCenter" class="form-control" value="Barangay Health Center">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Notes (optional):</strong></label>
+                                        <textarea id="referralNotes" class="form-control" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" onclick="confirmGenerateReferral(${consultationId}, this)">
+                                        <i class="bi bi-check-circle"></i> Generate Referral
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const existingModal = document.getElementById("generateReferralModal");
+                if (existingModal) existingModal.remove();
+                
+                document.body.insertAdjacentHTML("beforeend", modalHtml);
+                new bootstrap.Modal(document.getElementById("generateReferralModal")).show();
+                
+            } catch (err) {
+                console.error("Failed to show generate referral modal:", err);
+                alert("Error: " + err.message);
+            }
+        }
+        
+        async function confirmGenerateReferral(consultationId, btnElement) {
+            const center = document.getElementById("referralCenter").value || "Barangay Health Center";
+            const notes = document.getElementById("referralNotes").value || "";
+            
+            const originalHtml = btnElement.innerHTML;
+            
+            try {
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                const response = await apiCall(`/consultations/${consultationId}/generate-referral`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        referred_to_center: center,
+                        notes: notes
+                    })
+                });
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById("generateReferralModal"));
+                if (modal) modal.hide();
+                
+                alert(`Referral generated successfully! Code: ${response.referral_code}`);
+                loadPendingConsultations();
+                
+            } catch (err) {
+                console.error("Failed to generate referral:", err);
+                alert("Failed to generate referral: " + err.message);
+            } finally {
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalHtml;
+            }
+        }
+        
+        async function viewConsultationDetails(consultationId) {
+            try {
+                const c = await apiCall(`/consultations/${consultationId}`, { method: "GET" });
+                
+                const symptomsList = c.symptoms ? JSON.parse(c.symptoms) : [];
+                const profile = c.resident_profile || {};
+                
+                // Calculate expiration status
+                let expirationHtml = '';
+                if (c.referral && c.referral.expires_at) {
+                    const expiresDate = new Date(c.referral.expires_at);
+                    const now = new Date();
+                    const daysLeft = Math.ceil((expiresDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (c.referral.is_expired) {
+                        expirationHtml = `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> EXPIRED</span>`;
+                    } else if (daysLeft <= 2) {
+                        expirationHtml = `<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Expires in ${daysLeft} day${daysLeft > 1 ? 's' : ''}</span>`;
+                    } else {
+                        expirationHtml = `<span class="badge bg-success"><i class="bi bi-calendar-check"></i> Valid until ${expiresDate.toLocaleDateString()}</span>`;
+                    }
+                }
+                
+                const modalHtml = `
+                    <div class="modal fade" id="consultationDetailsModal" tabindex="-1">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title"><i class="bi bi-file-text"></i> Consultation #${c.id} Details</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <!-- Left Column: Resident Full Profile -->
+                                        <div class="col-md-6">
+                                            <div class="card border-primary mb-3">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0"><i class="bi bi-person-vcard"></i> Full Resident Health Profile</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-person"></i> Full Name:</strong> ${profile.full_name || 'N/A'}<br>
+                                                        <strong><i class="bi bi-at"></i> Username:</strong> ${profile.username || 'N/A'}<br>
+                                                        <strong><i class="bi bi-envelope"></i> Email:</strong> ${profile.email || 'N/A'}<br>
+                                                        <strong><i class="bi bi-telephone"></i> Contact:</strong> ${profile.contact_number || 'N/A'}
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-geo-alt"></i> Barangay:</strong> ${profile.barangay || 'N/A'}<br>
+                                                        <strong><i class="bi bi-house"></i> Address:</strong> ${profile.address || 'N/A'}
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-calendar"></i> Birth Date:</strong> ${profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : 'N/A'}<br>
+                                                        <strong><i class="bi bi-hash"></i> Age:</strong> ${profile.age || 'N/A'}<br>
+                                                        <strong><i class="bi bi-gender-ambiguous"></i> Gender:</strong> ${profile.gender || 'N/A'}
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-droplet"></i> Blood Type:</strong> ${profile.blood_type || 'N/A'}<br>
+                                                        <strong><i class="bi bi-heart-pulse"></i> Medical Conditions:</strong> ${profile.medical_conditions || 'None'}<br>
+                                                        <strong><i class="bi bi-exclamation-octagon"></i> Allergies:</strong> ${profile.allergies || 'None'}
+                                                    </div>
+                                                    <div class="alert alert-warning mb-0">
+                                                        <strong><i class="bi bi-person-plus"></i> Emergency Contact:</strong><br>
+                                                        ${profile.emergency_contact_name || 'N/A'} - ${profile.emergency_contact_number || 'N/A'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Right Column: Assessment & Referral -->
+                                        <div class="col-md-6">
+                                            <div class="card border-info mb-3">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0"><i class="bi bi-clipboard-pulse"></i> Health Assessment Result</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-exclamation-triangle"></i> Risk Level:</strong> 
+                                                        <span class="badge bg-danger">${c.risk_level || 'HIGH'}</span><br>
+                                                        <strong><i class="bi bi-heart-pulse"></i> Predicted Condition:</strong> ${c.assessment?.predicted_condition || 'N/A'}<br>
+                                                        <strong><i class="bi bi-thermometer"></i> Temperature:</strong> ${c.assessment?.temperature || 'N/A'}°C<br>
+                                                        <strong><i class="bi bi-clock-history"></i> Duration:</strong> ${c.assessment?.duration_days || 'N/A'} days
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <strong><i class="bi bi-activity"></i> Symptoms:</strong><br>
+                                                        <div class="p-2 bg-light rounded">
+                                                            ${symptomsList.map(s => `<span class="badge bg-secondary me-1 mb-1">${s}</span>`).join('') || 'No symptoms recorded'}
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-0">
+                                                        <strong><i class="bi bi-file-text"></i> Assessment Summary:</strong><br>
+                                                        <p class="mb-0 small">${c.assessment?.assessment_summary || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card border-${c.status === 'PENDING' ? 'warning' : (c.status === 'ASSIGNED' ? 'info' : 'success')}">
+                                                <div class="card-header bg-${c.status === 'PENDING' ? 'warning text-dark' : (c.status === 'ASSIGNED' ? 'info text-white' : 'success text-white')}">
+                                                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Consultation Status</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">
+                                                        <strong>Status:</strong> <span class="badge bg-${c.status === 'PENDING' ? 'warning text-dark' : (c.status === 'ASSIGNED' ? 'info' : 'success')}">${c.status}</span><br>
+                                                        <strong>Requested:</strong> ${new Date(c.created_at).toLocaleString()}<br>
+                                                        ${c.assigned_bhw_name ? `<strong>Assigned to:</strong> ${c.assigned_bhw_name}<br>` : ''}
+                                                        ${c.completed_at ? `<strong>Completed:</strong> ${new Date(c.completed_at).toLocaleString()}<br>` : ''}
+                                                    </div>
+                                                    ${c.referral ? `
+                                                        <div class="alert alert-success mb-0">
+                                                            <h6 class="mb-1"><i class="bi bi-file-earmark-medical"></i> Referral Generated</h6>
+                                                            <p class="mb-1"><strong>Code:</strong> ${c.referral.referral_code}</p>
+                                                            <p class="mb-1"><strong>Center:</strong> ${c.referral.referred_to_center}</p>
+                                                            <p class="mb-1"><strong>Generated By:</strong> ${c.referral.generated_by_name || 'N/A'}</p>
+                                                            <p class="mb-1"><strong>Expiration:</strong> ${expirationHtml}</p>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    ${c.notes ? `
+                                        <div class="mt-3">
+                                            <h6><i class="bi bi-sticky"></i> Notes</h6>
+                                            <div class="p-2 bg-light rounded">
+                                                <p class="mb-0">${c.notes.replace(/\n/g, '<br>')}</p>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="bi bi-arrow-left"></i> Back
+                                    </button>
+                                    ${c.status === 'PENDING' ? `
+                                        <button type="button" class="btn btn-primary" onclick="assignConsultation(${c.id}); bootstrap.Modal.getInstance(document.getElementById('consultationDetailsModal')).hide();">
+                                            <i class="bi bi-person-check"></i> Assign to Me
+                                        </button>
+                                    ` : ''}
+                                    ${(c.status === 'PENDING' || c.status === 'ASSIGNED') && !c.referral ? `
+                                        <button type="button" class="btn btn-success" onclick="generateReferralFromConsultation(${c.id}, '${c.resident_name}', '${symptomsList.join(", ").replace(/'/g, "\\'")}'); bootstrap.Modal.getInstance(document.getElementById('consultationDetailsModal')).hide();">
+                                            <i class="bi bi-file-earmark-medical"></i> Generate Referral
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const existingModal = document.getElementById("consultationDetailsModal");
+                if (existingModal) existingModal.remove();
+                
+                document.body.insertAdjacentHTML("beforeend", modalHtml);
+                new bootstrap.Modal(document.getElementById("consultationDetailsModal")).show();
+                
+            } catch (err) {
+                console.error("Failed to view consultation details:", err);
+                alert("Failed to load consultation details: " + err.message);
+            }
+        }
+
+        // Initialize
+        (async function init() {
+            setupNavigation();
+            await loadCurrentUser();
+            showSection('system-section');
+        })();
+    </script>
+</body>
+</html>

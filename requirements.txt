@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+Flask-Bcrypt
+Flask-Login
+Flask-Session
+Flask-Mail
+Flask-CORS
+psycopg2-binary
+python-dotenv
+reportlab
+twilio

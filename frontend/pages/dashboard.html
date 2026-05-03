@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAYANCARE Dashboard</title>
+    <!-- Bootstrap & Icons — served locally so the app works offline / after hard refresh -->
+    <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/bayancare.css">
+</head>
+<body class="bayancare-body">
+
+    <div id="bcLoadingOverlay" class="bc-loading-overlay" style="display:none;">
+        <div class="bc-loading-box text-center">
+            <div class="bc-medical-spinner mb-3"></div>
+            <p class="fw-semibold text-primary mb-0">Analyzing your symptoms…</p>
+            <p class="bc-muted small mb-0">Please wait a moment.</p>
+        </div>
+    </div>
+
+    <!-- Simple toast -->
+    <div id="bcToast" class="bc-toast" style="position:fixed; top:1rem; right:1rem; z-index:1080; display:none;">
+        <div class="bc-toast-body" id="bcToastBody"
+             style="background:#198754; color:#fff; padding:0.75rem 1rem; border-radius:999px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+            Done.
+        </div>
+    </div>
+
+    <div class="d-flex min-vh-100">
+        <!-- Sidebar (desktop) -->
+        <aside class="bc-sidebar d-none d-md-flex flex-column p-3">
+            <div class="d-flex align-items-center mb-4">
+                <div class="me-2" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                    <img src="../assets/images/logo.svg" alt="BAYANCARE Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <div>
+                    <div class="fw-bold text-primary">BAYANCARE</div>
+                    <small class="bc-muted">Barangay Health Advisory</small>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav nav-pills flex-column gap-1" id="bcSidebarNav">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-target="bcDashboard">Dashboard</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-target="bcSymptom">Symptom Analysis</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-target="bcRecords">Health Records</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-target="bcRecovery">Recovery Tracking</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-target="bcReferrals">Referrals</button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mt-auto pt-3 border-top small bc-muted">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>Logged in as <span id="bcUserRole">Resident</span></div>
+                    <button id="bcLogoutBtn" class="btn btn-sm btn-outline-danger">Logout</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <!-- Mobile top bar -->
+            <header class="d-md-none px-3 py-2 bg-white border-bottom d-flex align-items-center justify-content-between">
+                <button id="bcMobileToggle" class="btn btn-sm btn-outline-primary">
+                    <span class="bi bi-list"></span> Menu
+                </button>
+                <span class="fw-semibold">BAYANCARE</span>
+            </header>
+            <!-- Mobile menu -->
+            <div id="bcMobileMenu" class="d-md-none bg-white border-bottom" style="display:none;">
+                <nav class="p-2">
+                    <ul class="nav flex-column gap-1" id="bcMobileNav">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-target="bcDashboard">Dashboard</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-target="bcSymptom">Symptom Analysis</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-target="bcRecords">Health Records</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-target="bcRecovery">Recovery Tracking</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-target="bcReferrals">Referrals</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Content -->
+            <main class="flex-grow-1 p-3 p-md-4">
+                <!-- Dashboard -->
+                <section id="bcDashboard" class="bc-page bc-fade-slide active">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-8">
+                            <div class="bc-card card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-dark position-relative d-flex align-items-center justify-content-center" id="notificationBell" title="New Announcements" style="width: 32px; height: 32px; padding: 0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                                                </svg>
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notificationCount" style="font-size: 0.6rem;">
+                                                    0
+                                                </span>
+                                            </button>
+                                            <h5 class="mb-0">Community Health Announcements</h5>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary d-none" id="bcViewAllAnnouncements">View All</button>
+                                            <button class="btn btn-sm btn-outline-secondary" id="bcRefreshAnnouncements">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="bc-muted small mb-3">Latest advisories from your barangay health workers.</p>
+                                    <div id="bcAnnouncementList" class="bc-announcement-list">
+                                        <p class="bc-muted mb-0">No announcements yet.</p>
+                                    </div>
+                                    <div id="bcAnnouncementFooter" class="mt-3 d-none">
+                                        <button class="btn btn-outline-primary w-100" onclick="viewAllAnnouncements()">
+                                            <i class="bi bi-list"></i> View All Announcements
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="bc-card card mb-3">
+                                <div class="card-body">
+                                    <h6 class="mb-1">Symptom Analysis</h6>
+                                    <p class="bc-muted small mb-2">
+                                        Check your current health status based on your symptoms.
+                                    </p>
+                                    <button class="btn btn-primary w-100" data-target="bcSymptom">Start Symptom Check</button>
+                                </div>
+                            </div>
+                            <div class="bc-card card mb-3">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-1">Monitoring Status</h6>
+                                        <small class="bc-muted">Last assessment: <span id="bcLastAssessment">None</span></small>
+                                    </div>
+                                    <span id="bcMonitoringBadge" class="bc-risk-badge bc-risk-low">–</span>
+                                </div>
+                            </div>
+                            <div class="bc-card card">
+                                <div class="card-body">
+                                    <h6 class="mb-1">Referral Options</h6>
+                                    <p class="bc-muted small mb-2">
+                                        High-risk results can generate digital referral slips.
+                                    </p>
+                                    <button class="btn btn-outline-success w-100" data-target="bcReferrals">
+                                        View Referral Slips
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Symptom Analysis -->
+                <section id="bcSymptom" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Symptom Checker</h5>
+                                <span id="bcStepLabel" class="bc-step-indicator">1 of 3</span>
+                            </div>
+                            <p class="bc-muted small mb-3">
+                                Answer a few quick questions to get a risk classification and recommendations.
+                            </p>
+
+                            <form id="bcSymptomForm" novalidate>
+                                <!-- Step 1 -->
+                                <div class="bc-symptom-step" data-step="1">
+                                    <div class="row g-3">
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">Age</label>
+                                            <input type="number" class="form-control" name="age" min="0" required>
+                                            <div class="invalid-feedback">Please enter age.</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label">Temperature (°C)</label>
+                                            <input type="number" step="0.1" class="form-control" name="temperature">
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Duration of symptoms (days)</label>
+                                            <input type="number" min="0" class="form-control" name="duration_days">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2 -->
+                                <div class="bc-symptom-step" data-step="2" style="display:none;">
+                                    <label class="form-label">Select your symptoms</label>
+                                    <div class="row g-2 small">
+                                        <div class="col-6 col-md-4">
+                                            <div class="form-check bc-symptom-check">
+                                                <input class="form-check-input" type="checkbox" value="fever" id="bc_fever">
+                                                <label class="form-check-label" for="bc_fever">Fever</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="form-check bc-symptom-check">
+                                                <input class="form-check-input" type="checkbox" value="cough" id="bc_cough">
+                                                <label class="form-check-label" for="bc_cough">Cough</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="form-check bc-symptom-check">
+                                                <input class="form-check-input" type="checkbox" value="shortness of breath" id="bc_breath">
+                                                <label class="form-check-label" for="bc_breath">Shortness of breath</label>
+                                            </div>
+                                        </div>
+                                        <!-- More symptom options can be added -->
+                                    </div>
+                                    <label class="form-label mt-3">Other symptoms (optional)</label>
+                                    <textarea class="form-control" rows="2" name="other_symptoms"
+                                              placeholder="e.g., headache, sore throat"></textarea>
+                                </div>
+
+                                <!-- Step 3 -->
+                                <div class="bc-symptom-step" data-step="3" style="display:none;">
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Known allergies</label>
+                                            <textarea class="form-control" rows="2" name="allergies"
+                                                      placeholder="e.g., penicillin, aspirin"></textarea>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Chronic conditions</label>
+                                            <textarea class="form-control" rows="2" name="chronic_conditions"
+                                                      placeholder="e.g., asthma, diabetes"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" id="bcPrevStep">Back</button>
+                                    <div>
+                                        <button type="button" class="btn btn-primary" id="bcNextStep">Next</button>
+                                        <button type="submit" class="btn btn-success" id="bcSubmitAssessment" style="display:none;">
+                                            Analyze Symptoms
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <div id="bcAssessmentResult" class="mt-4" style="display:none;">
+                                <hr>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span id="bcRiskBadge" class="bc-risk-badge">RISK</span>
+                                    <small class="bc-muted ms-2">Confidence: <span id="bcConfidence">–</span> <span id="bcConfidenceLabel"></span></small>
+                                </div>
+                                <div id="bcConfidenceHelp" class="bc-muted small mb-2"></div>
+                                <p class="mb-1"><strong>Predicted condition:</strong> <span id="bcCondition">–</span></p>
+                                <p class="bc-muted small mb-2" id="bcSummary">Summary will appear here.</p>
+                                <p class="small mb-1 fw-semibold">Recommended action</p>
+                                <div class="small" id="bcRecommendations">Recommendations will appear here.</div>
+                                
+                                <!-- Similar Past Assessments -->
+                                <div id="bcSimilarAssessments" class="mt-3"></div>
+                                
+                                <!-- New Analysis Button -->
+                                <div class="mt-4 text-center">
+                                    <button type="button" class="btn btn-primary" id="bcNewAnalysisBtn">
+                                        <i class="bi bi-plus-circle"></i> Start New Analysis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Records -->
+                <section id="bcRecords" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Digital Health Profile & History</h5>
+                            <div class="accordion" id="bcRecordsAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="bcProfileHeading">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#bcProfileBody">
+                                            Health Profile
+                                        </button>
+                                    </h2>
+                                    <div id="bcProfileBody" class="accordion-collapse collapse show" data-bs-parent="#bcRecordsAccordion">
+                                        <div class="accordion-body small">
+                                            <div id="bcProfilePanel">
+                                                <p class="bc-muted mb-0">Loading profile…</p>
+                                            </div>
+                                            <hr class="my-3">
+                                            <div id="bcProfileFormWrap"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="bcHistoryHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bcHistoryBody">
+                                            Assessment History
+                                        </button>
+                                    </h2>
+                                    <div id="bcHistoryBody" class="accordion-collapse collapse" data-bs-parent="#bcRecordsAccordion">
+                                        <div class="accordion-body small">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="bc-muted">Your recent assessments</span>
+                                                <button class="btn btn-sm btn-outline-primary" id="bcRefreshHistory">Refresh</button>
+                                            </div>
+                                            <div id="bcHistoryList">
+                                                <p class="bc-muted mb-0">Loading history…</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Follow-up Notifications -->
+                <section id="bcFollowUps" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-2">Follow-up Notifications</h5>
+                            <p class="bc-muted small mb-3">Health check-ins and follow-up responses from your assessments.</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="bc-muted small">Recent notifications</span>
+                                <button class="btn btn-sm btn-outline-primary" id="bcRefreshFollowUps">Refresh</button>
+                            </div>
+                            <div id="bcFollowUpList" class="small">
+                                <p class="bc-muted mb-0">Loading notifications…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recovery Tracking -->
+                <section id="bcRecovery" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-2">Illness Monitoring &amp; Follow-Up</h5>
+                            <p class="bc-muted small mb-3">Track your recovery progress and respond to follow-up notifications.</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="bc-muted small">Your active recoveries</span>
+                                <button class="btn btn-sm btn-outline-primary" id="bcRefreshRecovery">Refresh</button>
+                            </div>
+                            <div id="bcRecoveryList">
+                                <p class="bc-muted">Loading&hellip;</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Referrals -->
+                <section id="bcReferrals" class="bc-page bc-fade-slide">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-2">Referral Slips</h5>
+                            <p class="bc-muted small mb-3">Your generated referral slips are listed below.</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="bc-muted small">Referrals</span>
+                                <button class="btn btn-sm btn-outline-primary" id="bcRefreshReferrals">Refresh</button>
+                            </div>
+                            <div id="bcReferralList" class="small">
+                                <p class="bc-muted mb-0">Loading referrals…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/api.js?v=2"></script>
+    <script src="../assets/js/api-follow-up.js"></script>
+    <script src="../assets/js/dashboard.js"></script>
+    <script>
+        // Recovery Tracking — loaded inline so it works within the dashboard SPA
+        async function loadMyRecoveries() {
+            const list = document.getElementById('bcRecoveryList');
+            if (!list) return;
+            list.innerHTML = '<div class="bc-skeleton" style="height: 150px; width: 100%; margin-bottom: 15px;"></div><div class="bc-skeleton" style="height: 150px; width: 100%;"></div>';
+            try {
+                const response = await fetch(`${API_BASE}/recovery/my-recoveries`, { credentials: 'include' });
+                if (!response.ok) {
+                    if (response.status === 401) { window.location.href = 'login.html'; return; }
+                    throw new Error('Failed to load recoveries');
+                }
+                const data = await response.json();
+
+                const activeRecoveries = (data.recoveries || []).filter(r =>
+                    r.assessment_status !== 'RESOLVED' && r.assessment_status !== 'REFERRED'
+                );
+
+                if (!activeRecoveries.length) {
+                    list.innerHTML = '<div class="bc-empty-state"><i class="bi bi-activity"></i><h6>No Active Recoveries</h6><p class="small mb-0">You do not have any active health monitoring at the moment.</p></div>';
+                    return;
+                }
+
+                list.innerHTML = activeRecoveries.map(recovery => {
+                    let borderColor = '#007bff';
+                    let statusBadge = '<span class="badge bg-primary">Active</span>';
+                    let statusText = 'Active';
+                    let showResponseButtons = false;
+
+                    if (recovery.recovery_status === 'OVERDUE') {
+                        borderColor = '#dc3545';
+                        statusBadge = '<span class="badge bg-danger">Overdue</span>';
+                        statusText = `${Math.abs(recovery.days_until_recovery)} days overdue`;
+                        showResponseButtons = true;
+                    } else if (recovery.recovery_status === 'DUE_TODAY') {
+                        borderColor = '#ffc107';
+                        statusBadge = '<span class="badge bg-warning text-dark">Due Today</span>';
+                        statusText = 'Due today';
+                        showResponseButtons = true;
+                    } else if (recovery.recovery_status === 'DUE_SOON') {
+                        borderColor = '#17a2b8';
+                        statusBadge = '<span class="badge bg-info">Upcoming</span>';
+                        statusText = `Due in ${recovery.days_until_recovery} days`;
+                    } else if (recovery.assessment_status === 'RESOLVED') {
+                        borderColor = '#28a745';
+                        statusBadge = '<span class="badge bg-success">Completed</span>';
+                        statusText = 'Completed';
+                    }
+
+                    const symptomsHtml = (recovery.symptoms || []).map(s =>
+                        `<span class="badge bg-light text-dark me-1">${s}</span>`
+                    ).join('');
+
+                    const responseButtonsHtml = showResponseButtons ? `
+                        <div class="mt-3 pt-3 border-top">
+                            <p class="fw-semibold mb-2">How are you feeling now?</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-success btn-sm" onclick="submitRecoveryResponse(${recovery.assessment_id}, 'OKAY', this)">✅ I'm okay now</button>
+                                <button class="btn btn-warning btn-sm" onclick="submitRecoveryResponse(${recovery.assessment_id}, 'SAME', this)">⚠️ Still the same</button>
+                                <button class="btn btn-danger btn-sm" onclick="submitRecoveryResponse(${recovery.assessment_id}, 'WORSENED', this)">🚨 Getting worse</button>
+                            </div>
+                        </div>` : '';
+
+                    return `
+                        <div class="card mb-3" data-assessment-id="${recovery.assessment_id}" style="border-left:4px solid ${borderColor};">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="card-title fw-bold">Assessment #${recovery.assessment_id}</h6>
+                                            ${statusBadge}
+                                        </div>
+                                        <div class="d-flex justify-content-between my-2 text-muted small">
+                                            <span><strong>Start:</strong> ${recovery.recovery_start_date ? new Date(recovery.recovery_start_date).toLocaleDateString() : 'N/A'}</span>
+                                            <span class="bc-risk-badge ${statusText === 'Active' ? 'bc-risk-low' : 'bc-risk-moderate'}">${statusText}</span>
+                                        </div>
+                                        
+                                        <button class="btn btn-sm btn-outline-secondary w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#recoveryDetails-${recovery.assessment_id}" aria-expanded="false" aria-controls="recoveryDetails-${recovery.assessment_id}">
+                                            View Details
+                                        </button>
+
+                                        <div class="collapse mt-2" id="recoveryDetails-${recovery.assessment_id}">
+                                            <div class="p-3 bg-light rounded small border">
+                                                <p><strong>Summary:</strong> ${recovery.assessment_summary || 'No summary available'}</p>
+                                                <div class="mb-2"><strong>Symptoms:</strong><br/> ${symptomsHtml || 'N/A'}</div>
+                                                <p class="mb-0"><strong>Recommendations:</strong><br/> ${recovery.recommendations || 'Follow your healthcare provider\'s instructions'}</p>
+                                            </div>
+                                        </div>
+                                        ${responseButtonsHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+            } catch (err) {
+                if (list) list.innerHTML = `<div class="bc-empty-state"><i class="bi bi-exclamation-triangle text-danger"></i><h6 class="text-danger">Error Loading Data</h6><p class="small mb-0">${err.message}</p></div>`;
+            }
+        }
+
+        async function submitRecoveryResponse(assessmentId, response, btnElement) {
+            const msgs = {
+                'OKAY': 'Great! Confirm that you are feeling better and your symptoms have resolved?',
+                'SAME': 'Your recovery period will be extended. Continue with your treatment. Confirm?',
+                'WORSENED': 'Your assessment will be marked as HIGH risk and a consultation with a health worker will be requested. Confirm?'
+            };
+            if (!confirm(msgs[response])) return;
+            
+            const originalHtml = btnElement.innerHTML;
+            try {
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                const res = await fetch(`${API_BASE}/recovery/assessment/${assessmentId}/follow-up-response`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ response })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    alert(`Response submitted!\n\n${result.message}\n\nYou will receive a confirmation via email.`);
+                    const card = document.querySelector(`[data-assessment-id="${assessmentId}"]`);
+                    if (card) {
+                        card.style.transition = 'opacity 0.5s ease';
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            const remaining = document.querySelectorAll('[data-assessment-id]');
+                            if (!remaining.length) {
+                                const list = document.getElementById('bcRecoveryList');
+                                if (list) list.innerHTML = '<div class="bc-empty-state"><i class="bi bi-activity"></i><h6>No Active Recoveries</h6><p class="small mb-0">You do not have any active health monitoring at the moment.</p></div>';
+                            }
+                        }, 500);
+                    }
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to submit response'));
+                }
+            } catch (err) {
+                alert('Error submitting response: ' + err.message);
+            } finally {
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalHtml;
+            }
+        }
+
+        // Hook into dashboard.js activateSection — load recoveries when the section becomes active
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('bcRefreshRecovery');
+            if (refreshBtn) refreshBtn.addEventListener('click', loadMyRecoveries);
+
+            // Patch activateSection to also trigger recovery load
+            const origActivate = window.__bcActivate;
+            document.body.addEventListener('click', e => {
+                const btn = e.target.closest('button[data-target]');
+                if (btn && btn.dataset.target === 'bcRecovery') {
+                    setTimeout(loadMyRecoveries, 50);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

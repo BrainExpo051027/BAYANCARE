@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAYANCARE • Login</title>
+  <!-- Fonts served locally so the login page works offline / after hard refresh -->
+  <link rel="stylesheet" href="../assets/vendor/fonts/fonts.css">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --text-dark: #1a6b4e;
+      --bg-light: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-light);
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* LEFT PANEL - Branding */
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(145deg, #e0f2eb 0%, #a7e8d4 50%, #6dd4b2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(6,182,212,0.09) 100%);
+      opacity: 0.08;
+      mix-blend-mode: overlay;
+    }
+
+    .logo-circle {
+      width: 360px;
+      height: 360px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 35px 70px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 60px;
+      z-index: 2;
+      animation: logoFloat 4s ease-in-out infinite;
+    }
+
+    .logo-circle img {
+      width: 280px;
+      height: 280px;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-circle:hover img {
+      transform: scale(1.05);
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .brand {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3.8rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -1px;
+      text-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+      z-index: 2;
+    }
+
+    .tagline {
+      margin-top: 16px;
+      font-size: 1.1rem;
+      color: #1a6b4e;
+      opacity: 0.85;
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    /* NURSE ILLUSTRATION - Overlapping */
+    .nurse-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -45%);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .nurse-center img {
+      height: 92vh;
+      max-height: 820px;
+      width: auto;
+      filter: drop-shadow(0 40px 80px rgba(0, 0, 0, 0.35));
+      transition: transform 0.6s ease;
+    }
+
+    /* RIGHT PANEL - Glassmorphism */
+    .right-panel {
+      flex: 1;
+      background-image: linear-gradient(to right, rgba(0, 0, 0, 0.046), rgba(7, 8, 10, 0.161));
+      background-color: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .right-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('img/c.png') center/cover no-repeat;
+      opacity: 0.15;
+      filter: blur(4px);
+    }
+
+    .right-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(150deg, rgba(3, 10, 28, 0.348) 0%, rgba(1, 9, 14, 0.5) 100%);
+    }
+
+    .form-wrapper {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      max-width: 420px;
+      color: #fff;
+    }
+
+    .form-wrapper h1 {
+      font-size: 2.85rem;
+      font-weight: 600;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      letter-spacing: -0.8px;
+    }
+
+    .subtitle {
+      font-size: 1.02rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 40px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 18px 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.09);
+      backdrop-filter: blur(12px);
+      font-size: 1.02rem;
+      color: #fff;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .input-group input::placeholder,
+    .input-group select {
+      color: rgba(255,255,255,0.55);
+    }
+
+    .input-group select option {
+      background-color: #1a2332;
+      color: #ffffff;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
+      background: rgba(255,255,255,0.14);
+      transform: translateY(-1px);
+    }
+
+    .signin-btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ffffff, #e0f2eb);
+      color: #0f172a;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .signin-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(16, 185, 129, 0.4);
+    }
+
+    .create-btn {
+      width: 100%;
+      padding: 18px;
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      background: transparent;
+      color: var(--primary);
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 12px;
+    }
+
+    .create-btn:hover {
+      background: rgba(16, 185, 129, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .signup-text {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 0.97rem;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .signup-text a {
+      color: #67e8b5;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .signup-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Messages */
+    .alert {
+      padding: 14px 18px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .alert-success { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.5); color: #67e8b5; }
+    .alert-danger { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.5); color: #fca5a5; }
+
+    /* Sparkle */
+    .sparkle {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #fff, #a5f3fc);
+      border-radius: 8px;
+      transform: rotate(45deg);
+      box-shadow: 0 0 35px rgba(255,255,255,0.7);
+      animation: sparkleFloat 4s ease-in-out infinite;
+      z-index: 3;
+      opacity: 0.85;
+    }
+
+    @keyframes sparkleFloat {
+      0%, 100% { transform: rotate(45deg) translateY(0); }
+      50% { transform: rotate(45deg) translateY(-18px); }
+    }
+
+    /* Form sections */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .nurse-center img {
+        height: 78vh;
+        max-height: 680px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .container { flex-direction: column; }
+
+      .left-panel {
+        padding: 50px 30px;
+        min-height: 38vh;
+      }
+
+      .logo-circle { width: 260px; height: 260px; }
+      .logo-circle img { width: 200px; height: 200px; }
+      .brand { font-size: 2.8rem; }
+
+      .nurse-center {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin: -40px auto 20px;
+        text-align: center;
+      }
+
+      .nurse-center img {
+        height: 240px;
+        max-height: 240px;
+        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+      }
+
+      .right-panel {
+        padding: 40px 30px;
+        min-height: 62vh;
+      }
+
+      .form-wrapper h1 { font-size: 2.3rem; }
+    }
+
+    @media (max-width: 480px) {
+      .left-panel { padding: 40px 24px; min-height: 34vh; }
+      .brand { font-size: 2.35rem; }
+      .logo-circle { width: 200px; height: 200px; }
+      .logo-circle img { width: 160px; height: 160px; }
+
+      .right-panel { padding: 32px 24px; }
+
+      .form-wrapper h1 { font-size: 2.05rem; }
+      .input-group input,
+      .input-group select,
+      .signin-btn,
+      .create-btn { padding: 16px 20px; font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="logo-circle">
+        <img src="../assets/images/logo.png" alt="BAYANCARE Logo">
+      </div>
+      <div class="brand">BAYANCARE</div>
+      <div class="tagline">Healthier Barangay, Happier Families</div>
+    </div>
+
+    <!-- NURSE ILLUSTRATION -->
+    <div class="nurse-center">
+      <img src="img/b.png" alt="Caring Nurse">
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="form-wrapper">
+
+        <!-- LOGIN -->
+        <div id="login-section" class="form-section active">
+          <h1>Welcome Back</h1>
+          <p class="subtitle">Sign in to access your barangay health records and services.</p>
+          <div id="login-message"></div>
+          <form id="login-form">
+            <div class="input-group">
+              <input type="text" id="login-username" placeholder="Username or Email" required>
+            </div>
+            <div class="input-group">
+              <input type="password" id="login-password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="signin-btn" id="login-submit-btn">Sign In</button>
+          </form>
+          <div class="signup-text">
+            Don't have an account? <a onclick="showRegister()">Sign up</a>
+          </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="register-section" class="form-section">
+          <h1>Join BAYANCARE</h1>
+          <p class="subtitle">Start managing your family's health today.</p>
+          <div id="register-message"></div>
+          <form id="register-form">
+            <div class="input-group">
+              <input type="text" id="register-username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+              <input type="email" id="register-email" placeholder="Email address" required>
+            </div>
+            <div class="input-group">
+              <input type="password" id="register-password" placeholder="Create password" required>
+            </div>
+            <div class="input-group">
+              <select id="register-role" required>
+                <option value="">Select your role</option>
+                <option value="RESIDENT">Resident</option>
+                <option value="BHW">Barangay Health Worker</option>
+              </select>
+            </div>
+            <button type="submit" class="create-btn" id="register-submit-btn">Create Account</button>
+          </form>
+          <div class="signup-text">
+            Already a member? <a onclick="showLogin()">Sign in</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Decorative sparkle -->
+      <div class="sparkle"></div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js?v=3"></script>
+  <script>
+    let currentUser = null;
+
+    function showLogin() {
+      document.getElementById('login-section').classList.add('active');
+      document.getElementById('register-section').classList.remove('active');
+      clearMessages();
+    }
+
+    function showRegister() {
+      document.getElementById('register-section').classList.add('active');
+      document.getElementById('login-section').classList.remove('active');
+      clearMessages();
+    }
+
+    function clearMessages() {
+      document.getElementById('login-message').innerHTML = '';
+      document.getElementById('register-message').innerHTML = '';
+    }
+
+    // Login form submission
+    document.getElementById('login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      const submitBtn = document.getElementById('login-submit-btn');
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+      
+      try {
+        const data = await loginUser(username, password);
+        currentUser = data;
+
+        document.getElementById('login-message').innerHTML = `
+          <div class="alert alert-success">
+            Login successful! Redirecting...
+          </div>
+        `;
+
+        let redirectUrl = 'dashboard.html';
+        if (data.role === 'BHW' || data.role === 'ADMIN') {
+          redirectUrl = 'bhw_dashboard.html';
+        }
+        
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1000);
+        
+      } catch (err) {
+        document.getElementById('login-message').innerHTML = `
+          <div class="alert alert-danger">
+            ${err.message}
+          </div>
+        `;
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+
+    // Register form submission
+    document.getElementById('register-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      const username = document.getElementById('register-username').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const role = document.getElementById('register-role').value;
+      
+      const submitBtn = document.getElementById('register-submit-btn');
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating account...';
+      
+      try {
+        await registerUser(username, email, password, role);
+        
+        document.getElementById('register-message').innerHTML = `
+          <div class="alert alert-success">
+            Registration successful! Your account has been created. You can now sign in.
+          </div>
+        `;
+        
+        document.getElementById('register-form').reset();
+        
+        setTimeout(() => {
+          showLogin();
+        }, 2000);
+        
+      } catch (err) {
+        document.getElementById('register-message').innerHTML = `
+          <div class="alert alert-danger">
+            ${err.message}
+          </div>
+        `;
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

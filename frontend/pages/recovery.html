@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Recovery - BAYANCARE</title>
+    <!-- Bootstrap & Icons — served locally so the app works offline / after hard refresh -->
+    <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/bayancare.css">
+</head>
+<body class="bayancare-body">
+
+    <div class="d-flex min-vh-100">
+        <!-- Sidebar -->
+        <aside class="bc-sidebar d-none d-md-flex flex-column p-3">
+            <div class="d-flex align-items-center mb-4">
+                <div class="me-2" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                    <img src="../assets/images/logo.svg" alt="BAYANCARE Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <div>
+                    <div class="fw-bold text-primary">BAYANCARE</div>
+                    <small class="bc-muted">Barangay Health Advisory</small>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav nav-pills flex-column gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link w-100 text-start" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link active w-100 text-start">My Recovery</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mt-auto pt-3 border-top small bc-muted">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>My Account</div>
+                    <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <!-- Mobile top bar -->
+            <header class="d-md-none px-3 py-2 bg-white border-bottom d-flex align-items-center justify-content-between">
+                <span class="fw-semibold">BAYANCARE - My Recovery</span>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-grow-1 p-4" style="background: var(--bc-bg-soft);">
+                <section class="bc-page bc-fade-slide active">
+                    <div class="bc-card card">
+                        <div class="card-body">
+                            <h5 class="mb-3">Illness Monitoring & Follow-Up</h5>
+                            <p class="bc-muted small mb-3">Track your recovery progress and respond to follow-up notifications.</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="bc-muted small">Your active recoveries</span>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadMyRecoveries()">Refresh</button>
+                            </div>
+                            
+                            <div id="recovery-list">
+                                <p class="bc-muted">Loading…</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script>
+        let currentUser = null;
+
+        async function loadMyRecoveries() {
+            const list = document.getElementById('recovery-list');
+            list.innerHTML = '<p class="bc-muted">Loading…</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/recovery/my-recoveries`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error('Failed to load recoveries');
+                }
+                
+                const data = await response.json();
+                
+                // Show all recoveries with recovery dates that are not completed
+                const activeRecoveries = data.recoveries.filter(recovery => {
+                    // Not already resolved or referred
+                    return recovery.assessment_status !== 'RESOLVED' && 
+                           recovery.assessment_status !== 'REFERRED';
+                });
+                
+                if (!activeRecoveries || activeRecoveries.length === 0) {
+                    list.innerHTML = '<p class="bc-muted">No active recovery tracking found.</p>';
+                    return;
+                }
+                
+                const recoveryHtml = activeRecoveries.map(recovery => {
+                    let borderColor = '#007bff';
+                    let statusBadge = '<span class="badge bg-primary">Active</span>';
+                    let statusText = 'Active';
+                    let showResponseButtons = false;
+                    
+                    if (recovery.recovery_status === 'OVERDUE') {
+                        borderColor = '#dc3545';
+                        statusBadge = '<span class="badge bg-danger">Overdue</span>';
+                        statusText = `${Math.abs(recovery.days_until_recovery)} days overdue`;
+                        showResponseButtons = true;
+                    } else if (recovery.recovery_status === 'DUE_TODAY') {
+                        borderColor = '#ffc107';
+                        statusBadge = '<span class="badge bg-warning text-dark">Due Today</span>';
+                        statusText = 'Due today';
+                        showResponseButtons = true;
+                    } else if (recovery.recovery_status === 'DUE_SOON') {
+                        borderColor = '#17a2b8';
+                        statusBadge = '<span class="badge bg-info">Upcoming</span>';
+                        statusText = `Due in ${recovery.days_until_recovery} days`;
+                    } else if (recovery.assessment_status === 'RESOLVED') {
+                        borderColor = '#28a745';
+                        statusBadge = '<span class="badge bg-success">Completed</span>';
+                        statusText = 'Completed';
+                    }
+                    
+                    const symptomsHtml = recovery.symptoms.map(symptom => 
+                        `<span class="badge bg-light text-dark me-1">${symptom}</span>`
+                    ).join('');
+                    
+                    const responseButtonsHtml = showResponseButtons ? `
+                        <div class="mt-3 pt-3 border-top">
+                            <p class="fw-semibold mb-2">How are you feeling now?</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-success btn-sm" onclick="submitResponse(${recovery.assessment_id}, 'OKAY')">
+                                    ✅ I'm okay now
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="submitResponse(${recovery.assessment_id}, 'SAME')">
+                                    ⚠️ Still the same
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="submitResponse(${recovery.assessment_id}, 'WORSENED')">
+                                    🚨 Getting worse
+                                </button>
+                            </div>
+                        </div>
+                    ` : '';
+                    
+                    return `
+                        <div class="card mb-3" data-assessment-id="${recovery.assessment_id}" style="border-left: 4px solid ${borderColor}; transition: opacity 0.5s ease;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="card-title">${recovery.symptoms ? recovery.symptoms.join(', ') : 'Unknown Condition'}</h6>
+                                            ${statusBadge}
+                                        </div>
+                                        <p class="bc-muted small mb-2">${recovery.assessment_summary || 'No summary available'}</p>
+                                        
+                                        <div class="row g-2 small">
+                                            <div class="col-md-6">
+                                                <strong>Risk Level:</strong> ${recovery.risk_level || 'N/A'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Status:</strong> ${statusText}
+                                            </div>
+                                            <div class="col-12">
+                                                <strong>Symptoms:</strong> ${symptomsHtml || 'N/A'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Start Date:</strong> ${recovery.recovery_start_date ? new Date(recovery.recovery_start_date).toLocaleDateString() : 'N/A'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>End Date:</strong> ${recovery.recovery_end_date ? new Date(recovery.recovery_end_date).toLocaleDateString() : 'N/A'}
+                                            </div>
+                                            <div class="col-12">
+                                                <strong>Recommendations:</strong> ${recovery.recommendations || 'Follow your healthcare provider\'s instructions'}
+                                            </div>
+                                        </div>
+                                        
+                                        ${responseButtonsHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                list.innerHTML = recoveryHtml;
+                
+            } catch (err) {
+                console.error('Error loading recoveries:', err);
+                list.innerHTML = `<div class="alert alert-danger">Error loading recovery data: ${err.message}</div>`;
+            }
+        }
+
+        async function submitResponse(assessmentId, response) {
+            const confirmMessages = {
+                'OKAY': 'Great! Confirm that you are feeling better and your symptoms have resolved?',
+                'SAME': 'Your recovery period will be extended. Continue with your treatment. Confirm?',
+                'WORSENED': 'An automatic referral will be generated for immediate medical attention. Confirm?'
+            };
+            
+            if (!confirm(confirmMessages[response])) return;
+            
+            try {
+                const response_data = await fetch(`${API_BASE}/recovery/assessment/${assessmentId}/follow-up-response`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        response: response
+                    })
+                });
+                
+                const result = await response_data.json();
+                
+                if (response_data.ok) {
+                    alert(`Response submitted successfully!\n\n${result.message}\n\nYou will receive a confirmation via email and SMS.`);
+                    // Remove the card for this assessment since it's been answered
+                    const card = document.querySelector(`[data-assessment-id="${assessmentId}"]`);
+                    if (card) {
+                        card.style.transition = 'opacity 0.5s ease';
+                        card.style.opacity = '0';
+                        setTimeout(() => card.remove(), 500);
+                    }
+                    // Check if any cards remain
+                    setTimeout(() => {
+                        const remainingCards = document.querySelectorAll('[data-assessment-id]');
+                        if (remainingCards.length === 0) {
+                            document.getElementById('recovery-list').innerHTML = '<p class="bc-muted">No active recovery tracking found.</p>';
+                        }
+                    }, 600);
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to submit response'));
+                }
+            } catch (err) {
+                alert('Error submitting response: ' + err.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await apiCall('/auth/logout', { method: 'POST' });
+                window.location.href = 'login.html';
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        // Load recoveries when page loads
+        document.addEventListener('DOMContentLoaded', loadMyRecoveries);
+    </script>
+</body>
+</html>
