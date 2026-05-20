@@ -1,7 +1,21 @@
 from functools import wraps
-from flask import request, jsonify, current_app
+from flask import jsonify
 from flask_login import login_required, current_user
 from app.models.user import Role
+
+
+def admin_required(f):
+    """Require an authenticated admin user."""
+
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if current_user.role != Role.ADMIN:
+            return jsonify({"success": False, "message": "Admin access required"}), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
 
 def role_required(*allowed_roles):
     """

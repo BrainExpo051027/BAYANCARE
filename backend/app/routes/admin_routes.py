@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models.user import User, Role
@@ -216,6 +216,7 @@ def delete_user(user_id):
 
         return {"message": f"User {user.username} and all related data deleted successfully"}
         
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return {"error": f"Failed to delete user: {str(e)}"}, 500
+        current_app.logger.exception("Failed to delete user %s", user_id)
+        return {"error": "Failed to delete user"}, 500

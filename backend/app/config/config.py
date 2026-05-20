@@ -39,3 +39,14 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "no-reply@bayancare.local")
+    # Notification test routes: disabled in production unless explicitly enabled
+    ENABLE_NOTIFICATION_TEST_ROUTES = os.environ.get(
+        "ENABLE_NOTIFICATION_TEST_ROUTES", ""
+    ).lower() in ("true", "on", "1")
+    ALLOWED_TEST_EMAIL_DOMAINS = [
+        d.strip().lower()
+        for d in os.environ.get(
+            "ALLOWED_TEST_EMAIL_DOMAINS", "bayancare.local,localhost"
+        ).split(",")
+        if d.strip()
+    ]
