@@ -1,15 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory, abort
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models.announcement import Announcement, AnnouncementLike
 from app.models.user import Role
 from app.utils.decorators import role_required
+from app.utils.upload_validation import announcement_upload_dir, save_announcement_image
 from app.services.notification_service import notify_emergency_announcement, notify_announcement_to_residents
 from datetime import datetime
-import os
-import uuid
+import re
 
 announcement_bp = Blueprint("announcement_routes", __name__)
+
+_SAFE_MEDIA_NAME = re.compile(r"^[a-f0-9]{32}\.(png|jpe?g|webp)$", re.IGNORECASE)
 
 def _auto_archive_ended_events():
     """Auto-archive announcements whose event has ended"""
@@ -22,6 +24,14 @@ def _auto_archive_ended_events():
     if archived_count > 0:
         db.session.commit()
     return archived_count
+
+@announcement_bp.route("/media/<path:filename>", methods=["GET"])
+def serve_announcement_media(filename):
+    """Serve stored announcement images (safe filenames only)."""
+    if not _SAFE_MEDIA_NAME.match(filename):
+        abort(404)
+    return send_from_directory(announcement_upload_dir(), filename)
+
 
 @announcement_bp.route("", methods=["GET"])
 def list_announcements():
@@ -167,16 +177,9 @@ def create_announcement():
     if is_multipart and "image" in request.files:
         file = request.files.get("image")
         if file and file.filename:
-            ext = os.path.splitext(file.filename)[1].lower()
-            safe_ext = ext if ext in (".png", ".jpg", ".jpeg", ".webp") else ""
-            filename = f"{uuid.uuid4().hex}{safe_ext}"
-            upload_dir = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend", "assets", "uploads", "announcements")
-            )
-            os.makedirs(upload_dir, exist_ok=True)
-            file_path = os.path.join(upload_dir, filename)
-            file.save(file_path)
-            image_url = f"/assets/uploads/announcements/{filename}"
+            image_url, upload_error = save_announcement_image(file)
+            if upload_error:
+                return {"error": upload_error}, 400
 
     # Parse event dates
     event_start_date = None

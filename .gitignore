@@ -46,4 +46,7 @@ Thumbs.db
 # Session files
 flask_session/
 
+# User-uploaded announcement images (stored outside web root)
+backend/uploads/
+
 fix-roadmap-BrainExpo051027-BAYANCARE.md

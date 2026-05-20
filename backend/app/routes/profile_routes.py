@@ -8,6 +8,52 @@ from app.utils.decorators import role_required
 
 profile_bp = Blueprint("profile_routes", __name__)
 
+# Fields residents may update on their own profile (BHW certification fields excluded)
+RESIDENT_EDITABLE_FIELDS = {
+    "full_name",
+    "last_name",
+    "first_name",
+    "middle_name",
+    "date_of_birth",
+    "age",
+    "sex",
+    "civil_status",
+    "address",
+    "barangay",
+    "contact_number",
+    "philhealth_id",
+    "blood_type",
+    "pwd_id",
+    "allergies",
+    "chronic_conditions",
+    "current_medications",
+    "lifestyle",
+    "household_details",
+    "covid_vaccination",
+    "other_immunizations",
+    "maternal_child_health",
+    "emergency_contact_person",
+    "emergency_contact_relationship",
+    "emergency_contact_number",
+}
+
+
+def _apply_profile_fields(profile, data, allowed_fields):
+    """Apply only allowlisted keys from request JSON to a health profile."""
+    from datetime import datetime
+
+    for field in allowed_fields:
+        if field not in data:
+            continue
+        value = data[field]
+        if field == "date_of_birth" and value:
+            profile.date_of_birth = datetime.fromisoformat(value).date()
+        elif field == "age":
+            profile.age = value
+        else:
+            setattr(profile, field, value)
+
+
 def clean_na_value(value):
     """Convert 'N/A' strings to None for better frontend handling"""
     if value == 'N/A' or value == 'n/a' or value == 'N/A' or value == '':
@@ -119,50 +165,14 @@ def get_my_profile():
 @profile_bp.route("/me", methods=["PUT"])
 @login_required
 def update_my_profile():
-    from datetime import datetime
     profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
-    data = request.get_json()
+    data = request.get_json() or {}
     if not profile:
         profile = HealthProfile(user_id=current_user.id)
         db.session.add(profile)
-    
-    # I. PERSONAL IDENTIFICATION
-    profile.full_name = data.get("full_name", profile.full_name)
-    profile.last_name = data.get("last_name", profile.last_name)
-    profile.first_name = data.get("first_name", profile.first_name)
-    profile.middle_name = data.get("middle_name", profile.middle_name)
-    if data.get("date_of_birth"):
-        profile.date_of_birth = datetime.fromisoformat(data["date_of_birth"]).date()
-    profile.age = data.get("age", profile.age)
-    profile.sex = data.get("sex", profile.sex)
-    profile.civil_status = data.get("civil_status", profile.civil_status)
-    profile.address = data.get("address", profile.address)
-    profile.barangay = data.get("barangay", profile.barangay)
-    profile.contact_number = data.get("contact_number", profile.contact_number)
-    profile.philhealth_id = data.get("philhealth_id", profile.philhealth_id)
-    
-    # II. MEDICAL HISTORY & SOCIAL DETERMINANTS
-    profile.blood_type = data.get("blood_type", profile.blood_type)
-    profile.pwd_id = data.get("pwd_id", profile.pwd_id)
-    profile.allergies = data.get("allergies", profile.allergies)
-    profile.chronic_conditions = data.get("chronic_conditions", profile.chronic_conditions)
-    profile.current_medications = data.get("current_medications", profile.current_medications)
-    profile.lifestyle = data.get("lifestyle", profile.lifestyle)
-    profile.household_details = data.get("household_details", profile.household_details)
-    
-    # III. PUBLIC HEALTH PROGRAM STATUS
-    profile.covid_vaccination = data.get("covid_vaccination", profile.covid_vaccination)
-    profile.other_immunizations = data.get("other_immunizations", profile.other_immunizations)
-    profile.maternal_child_health = data.get("maternal_child_health", profile.maternal_child_health)
-    
-    # IV. EMERGENCY CONTACT INFO & CERTIFICATION
-    profile.emergency_contact_person = data.get("emergency_contact_person", profile.emergency_contact_person)
-    profile.emergency_contact_relationship = data.get("emergency_contact_relationship", profile.emergency_contact_relationship)
-    profile.emergency_contact_number = data.get("emergency_contact_number", profile.emergency_contact_number)
-    profile.processed_by_bhw = data.get("processed_by_bhw", profile.processed_by_bhw)
-    if data.get("processed_date"):
-        profile.processed_date = datetime.fromisoformat(data["processed_date"]).date()
-    
+
+    _apply_profile_fields(profile, data, RESIDENT_EDITABLE_FIELDS)
+
     db.session.commit()
     return {"message": "Profile updated"}
 
@@ -271,50 +281,23 @@ def get_assessment_history(user_id):
 def update_profile(user_id):
     """BHW/Admin can update resident health profiles"""
     from datetime import datetime
+
     user = User.query.get_or_404(user_id)
     profile = HealthProfile.query.filter_by(user_id=user_id).first()
-    data = request.get_json()
-    
+    data = request.get_json() or {}
+
     if not profile:
         profile = HealthProfile(user_id=user_id)
         db.session.add(profile)
-    
-    # I. PERSONAL IDENTIFICATION
-    profile.full_name = data.get("full_name", profile.full_name)
-    profile.last_name = data.get("last_name", profile.last_name)
-    profile.first_name = data.get("first_name", profile.first_name)
-    profile.middle_name = data.get("middle_name", profile.middle_name)
-    if data.get("date_of_birth"):
-        profile.date_of_birth = datetime.fromisoformat(data["date_of_birth"]).date()
-    profile.age = data.get("age", profile.age)
-    profile.sex = data.get("sex", profile.sex)
-    profile.civil_status = data.get("civil_status", profile.civil_status)
-    profile.address = data.get("address", profile.address)
-    profile.barangay = data.get("barangay", profile.barangay)
-    profile.contact_number = data.get("contact_number", profile.contact_number)
-    profile.philhealth_id = data.get("philhealth_id", profile.philhealth_id)
-    
-    # II. MEDICAL HISTORY & SOCIAL DETERMINANTS
-    profile.blood_type = data.get("blood_type", profile.blood_type)
-    profile.pwd_id = data.get("pwd_id", profile.pwd_id)
-    profile.allergies = data.get("allergies", profile.allergies)
-    profile.chronic_conditions = data.get("chronic_conditions", profile.chronic_conditions)
-    profile.current_medications = data.get("current_medications", profile.current_medications)
-    profile.lifestyle = data.get("lifestyle", profile.lifestyle)
-    profile.household_details = data.get("household_details", profile.household_details)
-    
-    # III. PUBLIC HEALTH PROGRAM STATUS
-    profile.covid_vaccination = data.get("covid_vaccination", profile.covid_vaccination)
-    profile.other_immunizations = data.get("other_immunizations", profile.other_immunizations)
-    profile.maternal_child_health = data.get("maternal_child_health", profile.maternal_child_health)
-    
-    # IV. EMERGENCY CONTACT INFO & CERTIFICATION
-    profile.emergency_contact_person = data.get("emergency_contact_person", profile.emergency_contact_person)
-    profile.emergency_contact_relationship = data.get("emergency_contact_relationship", profile.emergency_contact_relationship)
-    profile.emergency_contact_number = data.get("emergency_contact_number", profile.emergency_contact_number)
-    profile.processed_by_bhw = data.get("processed_by_bhw", profile.processed_by_bhw)
-    if data.get("processed_date"):
-        profile.processed_date = datetime.fromisoformat(data["processed_date"]).date()
-    
+
+    bhw_editable = RESIDENT_EDITABLE_FIELDS | {"processed_date"}
+    _apply_profile_fields(profile, data, bhw_editable)
+
+    if "processed_date" in data and data.get("processed_date"):
+        profile.processed_by_bhw = current_user.username
+    elif data.get("mark_processed"):
+        profile.processed_by_bhw = current_user.username
+        profile.processed_date = datetime.utcnow().date()
+
     db.session.commit()
     return {"message": "Profile updated successfully"}

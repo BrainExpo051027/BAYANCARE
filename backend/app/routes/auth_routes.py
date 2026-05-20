@@ -1,17 +1,32 @@
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app.extensions import db
-from app.models.user import User
+from app.models.user import User, Role
 
 auth_bp = Blueprint("auth_routes", __name__)
 
+# Roles that may be requested via public signup (ADMIN is never allowed)
+_PUBLIC_REGISTRATION_ROLES = {Role.RESIDENT, Role.BHW}
+
+
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-    role = data.get("role", "RESIDENT")
+    requested_role = (data.get("role") or "RESIDENT").upper()
+
+    if requested_role == Role.ADMIN.value:
+        return {"error": "Invalid registration role"}, 400
+
+    try:
+        role = Role[requested_role]
+    except KeyError:
+        role = Role.RESIDENT
+
+    if role not in _PUBLIC_REGISTRATION_ROLES:
+        role = Role.RESIDENT
 
     if User.query.filter_by(username=username).first():
         return {"error": "Username already exists"}, 400
@@ -20,7 +35,7 @@ def register():
 
     # BHW accounts require admin approval
     is_approved = True
-    if role == "BHW":
+    if role == Role.BHW:
         is_approved = False
 
     user = User(username=username, email=email, role=role, is_approved=is_approved)
@@ -29,7 +44,7 @@ def register():
     db.session.commit()
 
     response_message = "User registered"
-    if role == "BHW" and not is_approved:
+    if role == Role.BHW and not is_approved:
         response_message += " (BHW account requires admin approval)"
 
     return {"message": response_message, "user_id": user.id, "is_approved": is_approved}, 201

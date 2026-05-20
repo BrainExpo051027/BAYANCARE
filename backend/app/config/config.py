@@ -43,6 +43,10 @@ class Config:
     ENABLE_NOTIFICATION_TEST_ROUTES = os.environ.get(
         "ENABLE_NOTIFICATION_TEST_ROUTES", ""
     ).lower() in ("true", "on", "1")
+    MAX_CONTENT_LENGTH = int(os.environ.get("MAX_CONTENT_LENGTH", 3 * 1024 * 1024))
+    MAX_ANNOUNCEMENT_IMAGE_BYTES = int(
+        os.environ.get("MAX_ANNOUNCEMENT_IMAGE_BYTES", 2 * 1024 * 1024)
+    )
     ALLOWED_TEST_EMAIL_DOMAINS = [
         d.strip().lower()
         for d in os.environ.get(
