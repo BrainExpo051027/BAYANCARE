@@ -2,6 +2,11 @@ from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app.extensions import db
 from app.models.user import User, Role
+from app.utils.rate_limit import (
+    rate_limit_auth_register,
+    check_login_rate_limits,
+    record_login_failure,
+)
 
 auth_bp = Blueprint("auth_routes", __name__)
 
@@ -10,6 +15,7 @@ _PUBLIC_REGISTRATION_ROLES = {Role.RESIDENT, Role.BHW}
 
 
 @auth_bp.route("/register", methods=["POST"])
+@rate_limit_auth_register
 def register():
     data = request.get_json() or {}
     username = data.get("username")
@@ -51,10 +57,14 @@ def register():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
     username = data.get("username")
     password = data.get("password")
     remember = data.get("remember", False)
+
+    rate_error = check_login_rate_limits(username)
+    if rate_error:
+        return rate_error
 
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
@@ -66,6 +76,7 @@ def login():
         session["role"] = user.role.value  # optional: store role in session for quick checks
         return {"message": "Login successful", "user_id": user.id, "role": user.role.value}
     else:
+        record_login_failure(username)
         return {"error": "Invalid credentials"}, 401
 
 @auth_bp.route("/logout", methods=["POST"])

@@ -9,6 +9,12 @@ from app.services.recovery_notification_service import RecoveryNotificationServi
 from app.models.assessment import Assessment, RiskLevel
 from app.utils.decorators import role_required
 from app.models.user import Role
+from app.utils.bhw_scope import (
+    can_bhw_access_assessment,
+    deny_bhw_out_of_scope,
+    filter_assessments_query_by_bhw_scope,
+    is_admin_user,
+)
 from datetime import datetime
 import logging
 
@@ -24,9 +30,10 @@ def get_recovery_timeline(assessment_id):
         # Check if user has access to this assessment
         assessment = Assessment.query.get_or_404(assessment_id)
         
-        # Users can only see their own assessments, BHWs can see all
         if current_user.role not in (Role.BHW, Role.ADMIN) and assessment.user_id != current_user.id:
             return {"error": "Access denied"}, 403
+        if current_user.role == Role.BHW and not can_bhw_access_assessment(assessment):
+            return deny_bhw_out_of_scope()
         
         timeline = RecoveryNotificationService.get_recovery_timeline(assessment_id)
         if not timeline:
@@ -44,8 +51,19 @@ def get_recovery_timeline(assessment_id):
 def update_recovery_dates(assessment_id):
     """Update recovery dates for an assessment (BHW only)"""
     try:
+        assessment = Assessment.query.get_or_404(assessment_id)
+        if not is_admin_user() and not can_bhw_access_assessment(assessment):
+            return deny_bhw_out_of_scope()
+
         data = request.get_json()
         new_recovery_end_date = data.get('recovery_end_date')
+
+        logger.info(
+            "Recovery dates update by user_id=%s role=%s assessment_id=%s",
+            current_user.id,
+            current_user.role.value,
+            assessment_id,
+        )
         
         success = RecoveryNotificationService.update_recovery_dates(
             assessment_id, 
@@ -67,6 +85,17 @@ def update_recovery_dates(assessment_id):
 def send_recovery_notification(assessment_id):
     """Send recovery notification for an assessment (BHW only)"""
     try:
+        assessment = Assessment.query.get_or_404(assessment_id)
+        if not is_admin_user() and not can_bhw_access_assessment(assessment):
+            return deny_bhw_out_of_scope()
+
+        logger.info(
+            "Recovery notification send by user_id=%s role=%s assessment_id=%s",
+            current_user.id,
+            current_user.role.value,
+            assessment_id,
+        )
+
         success = RecoveryNotificationService.send_recovery_notification(assessment_id)
         
         if not success:
@@ -84,7 +113,16 @@ def send_recovery_notification(assessment_id):
 def check_due_notifications():
     """Check and send due recovery notifications (BHW only)"""
     try:
-        sent_count = RecoveryNotificationService.check_and_send_due_notifications()
+        barangay_scope = None
+        if current_user.role == Role.BHW:
+            from app.utils.bhw_scope import get_current_bhw_barangay
+            barangay_scope = get_current_bhw_barangay()
+            if not barangay_scope:
+                return deny_bhw_out_of_scope()
+
+        sent_count = RecoveryNotificationService.check_and_send_due_notifications(
+            barangay_scope=barangay_scope
+        )
         
         return jsonify({
             "message": f"Recovery notification check completed",
@@ -109,9 +147,19 @@ def submit_follow_up_response(assessment_id):
         # Check if user has access to this assessment
         assessment = Assessment.query.get_or_404(assessment_id)
         
-        # Users can only respond to their own assessments, BHWs can respond to any
         if current_user.role not in (Role.BHW, Role.ADMIN) and assessment.user_id != current_user.id:
             return {"error": "Access denied"}, 403
+        if current_user.role == Role.BHW and not can_bhw_access_assessment(assessment):
+            return deny_bhw_out_of_scope()
+
+        if current_user.role in (Role.BHW, Role.ADMIN):
+            logger.info(
+                "Follow-up response by user_id=%s role=%s assessment_id=%s response=%s",
+                current_user.id,
+                current_user.role.value,
+                assessment_id,
+                patient_response,
+            )
         
         success = RecoveryNotificationService.process_patient_follow_up(
             assessment_id, 
@@ -136,9 +184,11 @@ def get_recovery_dashboard():
         now = datetime.utcnow()
         
         # Get all assessments with recovery dates — exclude HIGH risk (handled via Consultations)
-        assessments_with_recovery = Assessment.query.filter(
-            Assessment.recovery_end_date.isnot(None),
-            Assessment.risk_level != RiskLevel.HIGH
+        assessments_with_recovery = filter_assessments_query_by_bhw_scope(
+            Assessment.query.filter(
+                Assessment.recovery_end_date.isnot(None),
+                Assessment.risk_level != RiskLevel.HIGH,
+            )
         ).all()
         
         dashboard_data = {
@@ -211,9 +261,11 @@ def get_archived_recoveries():
         now = datetime.utcnow()
         
         # Get all assessments with recovery dates — exclude HIGH risk (handled via Consultations)
-        assessments = Assessment.query.filter(
-            Assessment.recovery_end_date.isnot(None),
-            Assessment.risk_level != RiskLevel.HIGH
+        assessments = filter_assessments_query_by_bhw_scope(
+            Assessment.query.filter(
+                Assessment.recovery_end_date.isnot(None),
+                Assessment.risk_level != RiskLevel.HIGH,
+            )
         ).order_by(Assessment.created_at.desc()).all()
         
         archived_recoveries = []

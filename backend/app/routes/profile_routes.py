@@ -5,6 +5,12 @@ from app.models.user import User, Role
 from app.models.health_profile import HealthProfile
 from app.models.assessment import Assessment
 from app.utils.decorators import role_required
+from app.utils.bhw_scope import (
+    can_bhw_access_user,
+    deny_bhw_out_of_scope,
+    filter_users_query_by_bhw_scope,
+    is_admin_user,
+)
 
 profile_bp = Blueprint("profile_routes", __name__)
 
@@ -90,6 +96,7 @@ def search_users():
             )
         )
     
+    query = filter_users_query_by_bhw_scope(query)
     users = query.order_by(User.username.asc()).limit(50).all()
 
     results = []
@@ -208,6 +215,8 @@ def get_my_assessment_history():
 @role_required(Role.BHW, Role.ADMIN)
 def get_profile(user_id):
     user = User.query.get_or_404(user_id)
+    if not is_admin_user() and not can_bhw_access_user(user):
+        return deny_bhw_out_of_scope()
     profile = HealthProfile.query.filter_by(user_id=user_id).first()
     
     # Clean N/A values
@@ -257,6 +266,9 @@ def get_profile(user_id):
 @login_required
 @role_required(Role.BHW, Role.ADMIN)
 def get_assessment_history(user_id):
+    user = User.query.get_or_404(user_id)
+    if not is_admin_user() and not can_bhw_access_user(user):
+        return deny_bhw_out_of_scope()
     assessments = Assessment.query.filter_by(user_id=user_id).order_by(Assessment.created_at.desc()).all()
     return jsonify([
         {
@@ -283,6 +295,8 @@ def update_profile(user_id):
     from datetime import datetime
 
     user = User.query.get_or_404(user_id)
+    if not is_admin_user() and not can_bhw_access_user(user):
+        return deny_bhw_out_of_scope()
     profile = HealthProfile.query.filter_by(user_id=user_id).first()
     data = request.get_json() or {}
 

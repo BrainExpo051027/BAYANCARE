@@ -125,20 +125,30 @@ class RecoveryNotificationService:
             return False
     
     @staticmethod
-    def check_and_send_due_notifications():
+    def check_and_send_due_notifications(barangay_scope=None):
         """
         Check for assessments that are due for recovery notifications and send them
-        This should be called periodically (e.g., daily)
+        This should be called periodically (e.g., daily).
+        When barangay_scope is set, only assessments for residents in that barangay are processed.
         """
         try:
+            from app.models.health_profile import HealthProfile
+            from app.models.user import User
+
             now = datetime.utcnow()
             
-            # Find assessments where recovery date is today or past, and not yet notified
-            due_assessments = Assessment.query.filter(
+            query = Assessment.query.filter(
                 Assessment.recovery_end_date <= now,
                 Assessment.recovery_notified == False,
                 Assessment.status.in_(['OPEN', 'FOLLOW_UP'])
-            ).all()
+            )
+            if barangay_scope:
+                query = (
+                    query.join(User, Assessment.user_id == User.id)
+                    .outerjoin(HealthProfile, HealthProfile.user_id == User.id)
+                    .filter(db.func.lower(HealthProfile.barangay) == barangay_scope)
+                )
+            due_assessments = query.all()
             
             sent_count = 0
             for assessment in due_assessments:

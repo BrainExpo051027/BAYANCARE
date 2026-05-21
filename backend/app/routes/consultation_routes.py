@@ -7,6 +7,12 @@ from app.models.referral import ReferralSlip
 from app.models.user import User, Role
 from app.services.referral_service import generate_referral_code
 from app.utils.decorators import role_required
+from app.utils.bhw_scope import (
+    can_bhw_access_consultation,
+    deny_bhw_out_of_scope,
+    filter_consultations_query_by_bhw_scope,
+    is_admin_user,
+)
 from app.services.notification_service import notify_assessment_status_update, notify_referral_generated
 from datetime import datetime
 import json
@@ -92,7 +98,7 @@ def get_pending_consultations():
         except KeyError:
             return {"error": f"Invalid status: {status_filter}"}, 400
     
-    # Order by newest first
+    query = filter_consultations_query_by_bhw_scope(query)
     consultations = query.order_by(ConsultationRequest.created_at.desc()).all()
     
     return {
@@ -127,6 +133,9 @@ def assign_consultation(consultation_id):
     BHW/Admin assigns a consultation to themselves.
     """
     consultation = ConsultationRequest.query.get_or_404(consultation_id)
+
+    if not is_admin_user() and not can_bhw_access_consultation(consultation):
+        return deny_bhw_out_of_scope()
     
     if consultation.status != ConsultationStatus.PENDING:
         return {"error": f"Cannot assign consultation with status: {consultation.status.value}"}, 400
@@ -172,6 +181,9 @@ def generate_consultation_referral(consultation_id):
     notes = data.get("notes", "")
     
     consultation = ConsultationRequest.query.get_or_404(consultation_id)
+
+    if not is_admin_user() and not can_bhw_access_consultation(consultation):
+        return deny_bhw_out_of_scope()
     
     # Verify the consultation is assigned to current user or user is admin
     if consultation.assigned_bhw_id != current_user.id and current_user.role != Role.ADMIN:
@@ -279,6 +291,8 @@ def get_consultation(consultation_id):
     # Check permissions
     if current_user.role == Role.RESIDENT and consultation.resident_id != current_user.id:
         return {"error": "You can only view your own consultations"}, 403
+    if current_user.role == Role.BHW and not can_bhw_access_consultation(consultation):
+        return deny_bhw_out_of_scope()
     
     result = consultation.to_dict()
     
